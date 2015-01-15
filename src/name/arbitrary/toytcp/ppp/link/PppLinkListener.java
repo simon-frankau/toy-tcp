@@ -1,6 +1,6 @@
 package name.arbitrary.toytcp.ppp.link;
 
-import name.arbitrary.toytcp.PppFrame;
+import name.arbitrary.toytcp.Buffer;
 
 /**
  * Interface to receive messages from the PPP link layer
@@ -8,7 +8,7 @@ import name.arbitrary.toytcp.PppFrame;
  * TODO: Should represent the external interface to the link layer. To replace PppFrameReader?
  */
 public interface PppLinkListener {
-    void onFrame(PppFrame frame);
+    void onFrame(Buffer buffer);
     void onLinkUp();
     void onLinkDown();
 }

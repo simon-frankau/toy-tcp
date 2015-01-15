@@ -13,10 +13,10 @@ public class Main {
         out.println("ToyTCP has started");
         out.flush();
 
-        PppFrameReader frameReader = new PppFrameReader(System.in, new PppFrameListener() {
+        PppFrameReader frameReader = new PppFrameReader(System.in, new Buffer.Listener() {
             @Override
-            public void onFrame(PppFrame frame) {
-                out.println("Received frame: " + frame);
+            public void receive(Buffer buffer) {
+                out.println("Received frame: " + buffer);
                 out.flush();
             }
         }, out);

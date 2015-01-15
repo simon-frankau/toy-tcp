@@ -21,17 +21,13 @@ public class Unframer {
     private final byte[] buffer = new byte[2 * MRU + BUFFER_SLACK];
 
     private final InputStream inputStream;
-    private final BufferListener bufferListener;
+    private final Buffer.Listener listener;
     private boolean synced = false;
     private int readOffset = 0;
 
-    public interface BufferListener {
-        void onBuffer(Buffer buffer);
-    }
-
-    public Unframer(InputStream inputStream, BufferListener bufferListener) {
+    public Unframer(InputStream inputStream, Buffer.Listener listener) {
         this.inputStream = inputStream;
-        this.bufferListener = bufferListener;
+        this.listener = listener;
     }
 
     public void process() throws IOException {
@@ -53,7 +49,7 @@ public class Unframer {
                 if (!synced) {
                     synced = true;
                 } else {
-                    bufferListener.onBuffer(new Buffer(buffer, frameStart, i));
+                    listener.receive(new Buffer(buffer, frameStart, i - frameStart));
                 }
                 frameStart = i + 1;
             }

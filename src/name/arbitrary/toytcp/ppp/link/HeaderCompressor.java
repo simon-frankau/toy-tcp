@@ -1,30 +1,27 @@
 package name.arbitrary.toytcp.ppp.link;
 
 import name.arbitrary.toytcp.Buffer;
-import name.arbitrary.toytcp.PppFrameListener;
 
 /**
  * Removes the address/control header, if present, from a PPP frame.
  */
-public class HeaderCompressor implements Unframer.BufferListener {
+public class HeaderCompressor implements Buffer.Listener {
     public final static byte ADDRESS = (byte)0xFF;
     public final static byte CONTROL = 0x03;
 
-    private final Unframer.BufferListener listener;
+    private final Buffer.Listener listener;
 
-    public HeaderCompressor(Unframer.BufferListener listener) {
+    public HeaderCompressor(Buffer.Listener listener) {
         this.listener = listener;
     }
 
     @Override
-    public void onBuffer(Buffer buffer) {
+    public void receive(Buffer buffer) {
         // Address and control field compression support
-        int start = buffer.getStart();
-        byte[] data = buffer.getData();
-        if (data[start] == ADDRESS && data[start+1] == CONTROL) {
-            start += 2;
+        if (buffer.length() >= 2 && buffer.get(0) == ADDRESS && buffer.get(1) == CONTROL) {
+            listener.receive(buffer.getSubBuffer(2));
+        } else {
+            listener.receive(buffer);
         }
-
-        listener.onBuffer(new Buffer(data, start, buffer.getEnd()));
     }
 }

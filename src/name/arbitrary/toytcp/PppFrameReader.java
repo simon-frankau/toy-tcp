@@ -18,12 +18,12 @@ import java.io.PrintStream;
 public class PppFrameReader {
 
     private final InputStream inputStream;
-    private final PppFrameListener listener;
+    private final Buffer.Listener listener;
     private final PrintStream logStream;
 
     private Thread readerThread;
 
-    public PppFrameReader(InputStream inputStream, PppFrameListener listener, PrintStream logStream) {
+    public PppFrameReader(InputStream inputStream, Buffer.Listener listener, PrintStream logStream) {
         this.inputStream = inputStream;
         this.listener = listener;
         this.logStream = logStream;

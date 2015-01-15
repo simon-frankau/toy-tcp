@@ -1,25 +1,22 @@
 package name.arbitrary.toytcp.ppp.link;
 
 import name.arbitrary.toytcp.Buffer;
-import name.arbitrary.toytcp.PppFrame;
-import name.arbitrary.toytcp.PppFrameListener;
 
 /**
  * Checks the FrameCheckSequence field, and only passes data on if the check passes.
  */
-public class FcsChecker implements Unframer.BufferListener {
-    private final PppFrameListener frameListener;
+public class FcsChecker implements Buffer.Listener {
+    private final Buffer.Listener listener;
 
-    public FcsChecker(PppFrameListener frameListener) {
-        this.frameListener = frameListener;
+    public FcsChecker(Buffer.Listener listener) {
+        this.listener = listener;
     }
 
     @Override
-    public void onBuffer(Buffer buffer) {
-        if (buffer.getEnd() - buffer.getStart() < 2) {
+    public void receive(Buffer buffer) {
+        if (buffer.length() < 2) {
             return;
         }
-
-        frameListener.onFrame(new PppFrame(buffer.getData(), buffer.getStart(), buffer.getEnd()));
+        listener.receive(buffer);
     }
 }
