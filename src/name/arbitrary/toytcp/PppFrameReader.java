@@ -4,6 +4,8 @@ import name.arbitrary.toytcp.ppp.link.FcsChecker;
 import name.arbitrary.toytcp.ppp.link.HeaderCompressor;
 import name.arbitrary.toytcp.ppp.link.Unframer;
 import name.arbitrary.toytcp.ppp.link.Unstuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,17 +18,16 @@ import java.io.PrintStream;
  * http://tools.ietf.org/html/rfc1662
  */
 public class PppFrameReader {
+    private static final Logger logger = LoggerFactory.getLogger(PppFrameReader.class);
 
     private final InputStream inputStream;
     private final Buffer.Listener listener;
-    private final PrintStream logStream;
 
     private Thread readerThread;
 
-    public PppFrameReader(InputStream inputStream, Buffer.Listener listener, PrintStream logStream) {
+    public PppFrameReader(InputStream inputStream, Buffer.Listener listener) {
         this.inputStream = inputStream;
         this.listener = listener;
-        this.logStream = logStream;
     }
 
     public void start() {
@@ -48,8 +49,7 @@ public class PppFrameReader {
                     unframer.process();
                 }
             } catch (IOException e) {
-                e.printStackTrace(logStream);
-                logStream.flush();
+                logger.error("Exception in main processing loop", e);
             }
         }
     }

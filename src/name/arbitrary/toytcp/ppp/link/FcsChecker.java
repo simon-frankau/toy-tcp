@@ -1,6 +1,8 @@
 package name.arbitrary.toytcp.ppp.link;
 
 import name.arbitrary.toytcp.Buffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks the FrameCheckSequence field, and only passes data on if the check passes.
@@ -8,6 +10,8 @@ import name.arbitrary.toytcp.Buffer;
  * Implementation taken from RFC1662.
  */
 public class FcsChecker implements Buffer.Listener {
+    private static final Logger logger = LoggerFactory.getLogger(FcsChecker.class);
+
     // FCS lookup table as calculated by the table generator.
     private static final int[] fcstab = {
         0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
@@ -44,8 +48,8 @@ public class FcsChecker implements Buffer.Listener {
         0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
     };
 
-    private final static int PPPINITFCS16 = 0xffff; // Initial FCS value
-    private final static int PPPGOODFCS16 = 0xf0b8; // Good final FCS value
+    private static final int PPPINITFCS16 = 0xffff; // Initial FCS value
+    private static final int PPPGOODFCS16 = 0xf0b8; // Good final FCS value
 
     private final Buffer.Listener listener;
 
@@ -79,10 +83,17 @@ public class FcsChecker implements Buffer.Listener {
     @Override
     public void receive(Buffer buffer) {
         if (buffer.length() < 2) {
+            if (buffer.length() == 0) {
+                logger.trace("Empty frame");
+            } else {
+                logger.warn("Frame too short to contain FCS field");
+            }
             return;
         }
         if (checkPppFcs(buffer)) {
             listener.receive(buffer.getSubBuffer(0, buffer.length() - 2));
+        } else {
+            logger.warn("Frame failed FCS check");
         }
     }
 }

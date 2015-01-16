@@ -1,6 +1,8 @@
 package name.arbitrary.toytcp.ppp.link;
 
 import name.arbitrary.toytcp.Buffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -10,12 +12,14 @@ import java.io.InputStream;
  * Unframer reads from an InputStream, and breaks the input into PPP frames.
  */
 public class Unframer {
+    private static final Logger logger = LoggerFactory.getLogger(Unframer.class);
+
     // Maximum Receive Unit informs the receive buffer size we set up
-    public final static int MRU = 1500;
+    public static final int MRU = 1500;
     // Allow some buffer overhead for flags, escaping, extra fields etc.
-    private final static int BUFFER_SLACK = 32;
+    private static final int BUFFER_SLACK = 32;
     // The character representing the start/end of frames.
-    private final static byte FLAG_CHAR = 0x7E;
+    private static final byte FLAG_CHAR = 0x7E;
 
     // Allow worst-case space for all characters being escaped!
     private final byte[] buffer = new byte[2 * MRU + BUFFER_SLACK];
@@ -33,11 +37,13 @@ public class Unframer {
     public void process() throws IOException {
         int spaceLeft = buffer.length - readOffset;
         if (spaceLeft == 0) {
+            logger.trace("Buffer full looking for end-of-frame");
             throw new IOException("Input buffer full without receiving end-of-frame");
         }
 
         int bytesRead = inputStream.read(buffer, readOffset, buffer.length - readOffset);
         if (bytesRead == -1) {
+            logger.trace("End of file reading input");
             throw new EOFException();
         }
         int newReadOffset = readOffset + bytesRead;
@@ -47,8 +53,10 @@ public class Unframer {
         for (int i = readOffset; i < newReadOffset; i++) {
             if (buffer[i] == FLAG_CHAR) {
                 if (!synced) {
+                    logger.trace("Synced on initial flag character");
                     synced = true;
                 } else {
+                    logger.trace("Frame received");
                     listener.receive(new Buffer(buffer, frameStart, i - frameStart));
                 }
                 frameStart = i + 1;

@@ -1,6 +1,8 @@
 package name.arbitrary.toytcp.ppp.link;
 
 import name.arbitrary.toytcp.Buffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Undo byte stuffing.
@@ -8,10 +10,10 @@ import name.arbitrary.toytcp.Buffer;
  * TODO: Remove async control characters too?
  */
 public class Unstuffer implements Buffer.Listener {
-    public final static byte ESCAPE_CHAR = 0x7D;
-    public final static byte ESCAPE_MASK = 0x20;
-    public final static byte ADDRESS = (byte)0xFF;
-    public final static byte CONTROL = 0x03;
+    private static final Logger logger = LoggerFactory.getLogger(Unstuffer.class);
+
+    public static final byte ESCAPE_CHAR = 0x7D;
+    public static final byte ESCAPE_MASK = 0x20;
 
     private final Buffer.Listener listener;
 
@@ -28,6 +30,7 @@ public class Unstuffer implements Buffer.Listener {
             if (value == ESCAPE_CHAR) {
                 if (++src == buffer.length()) {
                     // Escape character at end, abort frame.
+                    logger.warn("Escape character at end of frame - aborting frame");
                     return;
                 }
                 value = (byte)(buffer.get(src) ^ ESCAPE_MASK);
