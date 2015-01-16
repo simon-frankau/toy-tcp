@@ -43,7 +43,7 @@ public class PppFrameReader {
         public void run() {
             try {
                 Unframer unframer =
-                        new Unframer(inputStream, new Unstuffer(new HeaderCompressor(new FcsChecker(listener))));
+                        new Unframer(inputStream, new Unstuffer(new FcsChecker(new HeaderCompressor(listener))));
                 while (true) {
                     unframer.process();
                 }

@@ -26,8 +26,11 @@ public class Unstuffer implements Buffer.Listener {
         for (int src = 0; src != buffer.length(); src++, dst++) {
             byte value = buffer.get(src);
             if (value == ESCAPE_CHAR) {
-                // TODO: If at buffer end, abort frame.
-                value = (byte)(buffer.get(++src) ^ ESCAPE_MASK);
+                if (++src == buffer.length()) {
+                    // Escape character at end, abort frame.
+                    return;
+                }
+                value = (byte)(buffer.get(src) ^ ESCAPE_MASK);
             }
             buffer.put(dst, value);
         }
