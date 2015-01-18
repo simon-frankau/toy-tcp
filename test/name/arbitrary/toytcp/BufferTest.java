@@ -48,16 +48,24 @@ public class BufferTest {
         assertEquals(subBuf.length(), 6);
     }
 
-    // Utility function for tests.
-    public void checkBuffer(Buffer buffer, int... values) {
-        assertEquals(buffer.length(), values.length);
-        for (int i = 0; i < values.length; i++) {
-            assertEquals(buffer.get(i), values[i]);
-        }
+    @Test
+    public void testEqualsAndHashCodeSucceed() {
+        Buffer buffer2 = new Buffer(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+        assertEquals(buffer, buffer2);
+        assertEquals(buffer.hashCode(), buffer2.hashCode());
     }
 
     @Test
-    public void testCheckBufferSucceedsWithRightData() {
-        checkBuffer(buffer, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+    public void testEqualsAndHashCodeFailIfLengthsDiffer() {
+        Buffer buffer2 = new Buffer(10, 11, 12, 13, 14, 15, 16, 17, 18);
+        assertNotEquals(buffer, buffer2);
+        assertNotEquals(buffer.hashCode(), buffer2.hashCode());
+    }
+
+    @Test
+    public void testEqualsAndHashCodeFailIfValuesDiffer() {
+        Buffer buffer2 = new Buffer(10, 11, 12, 13, 14, 15, 16, 17, 18, 20);
+        assertNotEquals(buffer, buffer2);
+        assertNotEquals(buffer.hashCode(), buffer2.hashCode());
     }
 }

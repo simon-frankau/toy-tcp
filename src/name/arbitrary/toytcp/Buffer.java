@@ -1,9 +1,13 @@
 package name.arbitrary.toytcp;
 
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * A Buffer is simply a view into a byte array.
  */
-public class Buffer {
+public final class Buffer {
     private final byte[] data;
     private final int start;
     private final int length;
@@ -12,6 +16,15 @@ public class Buffer {
         this.data = data;
         this.start = start;
         this.length = length;
+    }
+
+    public Buffer(int... data) {
+        this.data = new byte[data.length];
+        for (int i = 0 ; i < data.length; i++) {
+            this.data[i] = (byte)data[i];
+        }
+        this.start = 0;
+        this.length = data.length;
     }
 
     public byte get(int i) {
@@ -44,6 +57,36 @@ public class Buffer {
             format = " %02x";
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Buffer buffer = (Buffer) o;
+
+        if (length != buffer.length) return false;
+
+        // Equality only covers the part of the buffer we're interested in,
+        // not how it's encapsulated.
+        for (int i = 0; i < length; i++) {
+            if (buffer.get(i) != get(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 0;
+        for (int i = 0; i < length; i++) {
+            result = 31 * get(i) + result;
+        }
+        result = 31 * result + length;
+        return result;
     }
 
     public interface Listener {
