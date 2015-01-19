@@ -68,4 +68,24 @@ public class BufferTest {
         assertNotEquals(buffer, buffer2);
         assertNotEquals(buffer.hashCode(), buffer2.hashCode());
     }
+
+    @Test
+    public void testDeepCopyIsEqual() {
+        Buffer buffer2 = buffer.deepCopy();
+        assertEquals(buffer, buffer2);
+    }
+
+    @Test
+    public void testDeepCopyDoesNotShowUpdates() {
+        Buffer buffer2 = buffer.deepCopy();
+        buffer.put(0, (byte)180);
+        assertNotEquals(buffer, buffer2);
+    }
+
+    @Test
+    public void testPutVisibleAcrossShallowCopies() {
+        Buffer buffer2 = buffer.getSubBuffer(0);
+        buffer.put(0, (byte)180);
+        assertEquals(buffer, buffer2);
+    }
 }

@@ -45,8 +45,7 @@ public class PppFrameReader {
             try {
                 Unframer unframer =
                         new Unframer(inputStream, new Unstuffer(new FcsChecker(new HeaderCompressor(listener))));
-                while (true) {
-                    unframer.process();
+                while (unframer.process()) {
                 }
             } catch (IOException e) {
                 logger.error("Exception in main processing loop", e);

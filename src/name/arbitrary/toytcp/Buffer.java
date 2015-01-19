@@ -47,6 +47,11 @@ public final class Buffer {
         return new Buffer(data, start + offset, length);
     }
 
+    // Sub-buffer construction shares the underlying data. deepCopy removes the sharing.
+    public Buffer deepCopy() {
+        return new Buffer(Arrays.copyOfRange(data, start, start + length), 0, length);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

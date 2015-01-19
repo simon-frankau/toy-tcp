@@ -4,7 +4,6 @@ import name.arbitrary.toytcp.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,7 +18,7 @@ public class Unframer {
     // Allow some buffer overhead for flags, escaping, extra fields etc.
     private static final int BUFFER_SLACK = 32;
     // The character representing the start/end of frames.
-    private static final byte FLAG_CHAR = 0x7E;
+    public static final byte FLAG_CHAR = 0x7E;
 
     // Allow worst-case space for all characters being escaped!
     private final byte[] buffer = new byte[2 * MRU + BUFFER_SLACK];
@@ -34,7 +33,8 @@ public class Unframer {
         this.listener = listener;
     }
 
-    public void process() throws IOException {
+    // Returns true if EOF not reached.
+    public boolean process() throws IOException {
         int spaceLeft = buffer.length - readOffset;
         if (spaceLeft == 0) {
             logger.trace("Buffer full looking for end-of-frame");
@@ -44,7 +44,7 @@ public class Unframer {
         int bytesRead = inputStream.read(buffer, readOffset, buffer.length - readOffset);
         if (bytesRead == -1) {
             logger.trace("End of file reading input");
-            throw new EOFException();
+            return false;
         }
         int newReadOffset = readOffset + bytesRead;
 
@@ -75,5 +75,7 @@ public class Unframer {
             // Not yet sync'd, drop everything.
             readOffset = 0;
         }
+
+        return true;
     }
 }
