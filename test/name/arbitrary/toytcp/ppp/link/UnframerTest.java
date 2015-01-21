@@ -65,7 +65,7 @@ public class UnframerTest {
         Unframer unframer = new Unframer(inputStream, new DeepCopyingBufferListener(listener));
         while (unframer.process()) {
         }
-        verify(listener, times(1)).receive(new Buffer());
+        verify(listener, times(2)).receive(new Buffer());
         verifyNoMoreInteractions(listener);
     }
 
