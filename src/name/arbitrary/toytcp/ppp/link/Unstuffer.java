@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  *
  * TODO: Remove async control characters too?
  */
-public class Unstuffer implements Buffer.Listener {
+class Unstuffer implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(Unstuffer.class);
 
     public static final byte ESCAPE_CHAR = 0x7D;

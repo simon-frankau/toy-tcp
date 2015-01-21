@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  *
  * Implementation taken from RFC1662.
  */
-public class FcsChecker implements Buffer.Listener {
+class FcsChecker implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(FcsChecker.class);
 
     // FCS lookup table as calculated by the table generator.

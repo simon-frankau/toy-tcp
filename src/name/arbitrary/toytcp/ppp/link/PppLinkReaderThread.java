@@ -10,7 +10,7 @@ import java.io.InputStream;
 /**
  * PPP link layer reader thread
  */
-public class PppLinkReaderThread {
+class PppLinkReaderThread {
     private static final Logger logger = LoggerFactory.getLogger(PppLinkReaderThread.class);
 
     private final InputStream inputStream;

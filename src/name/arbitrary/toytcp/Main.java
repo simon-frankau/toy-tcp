@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp;
 
+import name.arbitrary.toytcp.ppp.link.PppLink;
+import name.arbitrary.toytcp.ppp.link.PppLinkListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,18 +13,25 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-	    // Process pppProcess = new PppProcessRunner().start();
-
         logger.info("ToyTCP has started");
 
-        PppFrameReader frameReader = new PppFrameReader(System.in, new Buffer.Listener() {
+        PppLink link = new PppLink(System.in);
+        link.subscribe(0xC021, new PppLinkListener() {
             @Override
-            public void receive(Buffer buffer) {
-                logger.info("Received frame: " + buffer);
+            public void onFrame(Buffer buffer) {
+                logger.info("Received frame: {}", buffer);
+            }
+
+            @Override
+            public void onLinkUp() {
+                logger.info("Link UP");
+            }
+
+            @Override
+            public void onLinkDown() {
+                logger.info("Link DOWN");
             }
         });
-        frameReader.start();
-
-        // pppProcess.waitFor();
+        link.start();
     }
 }

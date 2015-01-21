@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * but if (un)subscription comes on a different thread than the usual frame processing, you might get frames arriving
  * before/after the associate (un)subscription.
  */
-public class Demultiplexer implements PppLinkListener {
+class Demultiplexer implements PppLinkListener {
     private static final Logger logger = LoggerFactory.getLogger(Demultiplexer.class);
 
     private final Map<Integer, PppLinkListener> listeners = new ConcurrentHashMap<Integer, PppLinkListener>();

@@ -10,7 +10,7 @@ import java.io.InputStream;
 /**
  * Unframer reads from an InputStream, and breaks the input into PPP frames.
  */
-public class Unframer {
+class Unframer {
     private static final Logger logger = LoggerFactory.getLogger(Unframer.class);
 
     // Maximum Receive Unit informs the receive buffer size we set up

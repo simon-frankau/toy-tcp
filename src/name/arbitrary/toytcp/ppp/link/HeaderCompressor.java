@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Removes the address/control header, if present, from a PPP frame.
  */
-public class HeaderCompressor implements Buffer.Listener {
+class HeaderCompressor implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(HeaderCompressor.class);
 
     public static final byte ADDRESS = (byte)0xFF;
