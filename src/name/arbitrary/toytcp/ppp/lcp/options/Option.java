@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * TODO: Fixme
+ * Interface to represent an LCP option.
  */
 public interface Option {
 }

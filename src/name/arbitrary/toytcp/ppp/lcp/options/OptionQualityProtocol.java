@@ -3,7 +3,7 @@ package name.arbitrary.toytcp.ppp.lcp.options;
 import name.arbitrary.toytcp.Buffer;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Quality-Protocol option.
  */
 public class OptionQualityProtocol implements Option {
     private final int qualityProtocol;

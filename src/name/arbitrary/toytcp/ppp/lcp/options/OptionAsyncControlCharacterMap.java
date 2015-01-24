@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Async-Control-Character-Map option.
  */
 public final class OptionAsyncControlCharacterMap implements Option {
     private final int asyncMap;

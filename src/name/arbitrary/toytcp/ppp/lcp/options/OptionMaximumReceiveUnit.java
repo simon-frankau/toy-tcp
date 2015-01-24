@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Maximum-Receive-Unit option.
  */
 public final class OptionMaximumReceiveUnit implements Option {
     private final int maximumReceiveUnit;

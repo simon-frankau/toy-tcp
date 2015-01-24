@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Magic-Number option.
  */
 public final class OptionMagicNumber implements Option {
     private final int magicNumber;

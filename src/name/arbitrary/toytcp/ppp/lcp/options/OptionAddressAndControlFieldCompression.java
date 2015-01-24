@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Address-And-Control-Field-Compression option.
  */
 public enum OptionAddressAndControlFieldCompression implements Option {
     INSTANCE;

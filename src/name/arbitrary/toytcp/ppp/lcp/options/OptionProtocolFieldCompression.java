@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Protocol-Field-Compression option.
  */
 public enum OptionProtocolFieldCompression implements Option {
     INSTANCE;

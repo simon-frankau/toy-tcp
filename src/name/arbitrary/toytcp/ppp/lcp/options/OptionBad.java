@@ -3,7 +3,7 @@ package name.arbitrary.toytcp.ppp.lcp.options;
 import name.arbitrary.toytcp.Buffer;
 
 /**
- * Created by sgf on 23/01/2015.
+ * Unrecognised or badly-formatted option.
  */
 public final class OptionBad implements Option {
     private final byte type;
