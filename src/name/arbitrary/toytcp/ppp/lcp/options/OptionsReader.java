@@ -11,8 +11,6 @@ import java.util.List;
  * Reads an option or set of options. Helper class for FrameReader.
  */
 public class OptionsReader {
-    private static final Logger logger = LoggerFactory.getLogger(OptionsReader.class);
-
     public static final byte MAXIMUM_RECEIVE_UNIT = 1;
     public static final byte ASYNC_CONTROL_CHARACTER_MAP = 2;
     public static final byte AUTHENTICATION_PROTOCOL = 3;
@@ -81,12 +79,12 @@ public class OptionsReader {
                 if (buffer.length() != 0) {
                     return new OptionBad(type, buffer);
                 }
-                return new OptionProtocolFieldCompression();
+                return OptionProtocolFieldCompression.INSTANCE;
             case ADDRESS_AND_CONTROL_COMPRESSION_FIELD:
                 if (buffer.length() != 0) {
                     return new OptionBad(type, buffer);
                 }
-                return new OptionAddressAndControlFieldCompression();
+                return OptionAddressAndControlFieldCompression.INSTANCE;
             default:
                 return new OptionBad(type, buffer);
         }

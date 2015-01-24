@@ -3,7 +3,7 @@ package name.arbitrary.toytcp.ppp.lcp.options;
 /**
  * Created by sgf on 23/01/2015.
  */
-public class OptionAsyncControlCharacterMap implements Option {
+public final class OptionAsyncControlCharacterMap implements Option {
     private final int asyncMap;
 
     public OptionAsyncControlCharacterMap(int asyncMap) {
@@ -15,5 +15,22 @@ public class OptionAsyncControlCharacterMap implements Option {
         return "OptionAsyncControlCharacterMap{" +
                 "asyncMap=" + asyncMap +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        OptionAsyncControlCharacterMap that = (OptionAsyncControlCharacterMap) o;
+
+        if (asyncMap != that.asyncMap) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return asyncMap;
     }
 }

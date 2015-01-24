@@ -22,4 +22,24 @@ public class OptionQualityProtocol implements Option {
                 ", data=" + data +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        OptionQualityProtocol that = (OptionQualityProtocol) o;
+
+        if (qualityProtocol != that.qualityProtocol) return false;
+        if (!data.equals(that.data)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = qualityProtocol;
+        result = 31 * result + data.hashCode();
+        return result;
+    }
 }
