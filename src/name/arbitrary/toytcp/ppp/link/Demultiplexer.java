@@ -44,14 +44,14 @@ class Demultiplexer implements PppLinkListener {
             return;
         }
         int startOffset = 1;
-        int protocol = buffer.get(0) & 0xFF;
+        int protocol = buffer.getU8(0);
         if ((protocol & 1) == 0) {
-            // That was the most significant octet. Read the least significant.
+            // It's a 16-bit protocol.
             if (buffer.length() < 2) {
                 logger.warn("Buffer too short to read protocol field (byte 2)");
                 return;
             }
-            protocol = (protocol << 8) | (buffer.get(1) & 0xFF);
+            protocol = buffer.getU16(0);
             startOffset++;
         }
         PppLinkListener listener = listeners.get(protocol);

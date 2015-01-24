@@ -48,8 +48,8 @@ class FcsChecker implements Buffer.Listener {
         0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
     };
 
-    private static final int PPPINITFCS16 = 0xffff; // Initial FCS value
-    private static final int PPPGOODFCS16 = 0xf0b8; // Good final FCS value
+    private static final int PPP_INIT_FCS16 = 0xffff; // Initial FCS value
+    private static final int PPP_GOOD_FCS16 = 0xf0b8; // Good final FCS value
 
     private final Buffer.Listener listener;
 
@@ -70,13 +70,13 @@ class FcsChecker implements Buffer.Listener {
     {
         /* TODO: Use in constructing packets!
         // add on output
-        trialfcs = pppfcs16( PPPINITFCS16, cp, len );
+        trialfcs = pppfcs16( PPP_INIT_FCS16, cp, len );
         trialfcs ^= 0xffff;                 // complement
         cp[len] = (trialfcs & 0x00ff);      // least significant byte first
         cp[len+1] = ((trialfcs >> 8) & 0x00ff);
         */
         // check on input
-        return pppfcs16(PPPINITFCS16, buffer) == PPPGOODFCS16;
+        return pppfcs16(PPP_INIT_FCS16, buffer) == PPP_GOOD_FCS16;
     }
 
 

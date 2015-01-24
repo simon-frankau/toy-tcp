@@ -11,7 +11,7 @@ class HeaderCompressor implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(HeaderCompressor.class);
 
     public static final byte ADDRESS = (byte)0xFF;
-    public static final byte CONTROL = 0x03;
+    public static final byte CONTROL = (byte)0x03;
 
     private final Buffer.Listener listener;
 

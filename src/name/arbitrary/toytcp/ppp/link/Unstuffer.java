@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 class Unstuffer implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(Unstuffer.class);
 
-    public static final byte ESCAPE_CHAR = 0x7D;
-    public static final byte ESCAPE_MASK = 0x20;
+    public static final byte ESCAPE_CHAR = (byte)0x7D;
+    public static final byte ESCAPE_MASK = (byte)0x20;
 
     private final Buffer.Listener listener;
 

@@ -18,7 +18,7 @@ class Unframer {
     // Allow some buffer overhead for flags, escaping, extra fields etc.
     private static final int BUFFER_SLACK = 32;
     // The character representing the start/end of frames.
-    public static final byte FLAG_CHAR = 0x7E;
+    public static final byte FLAG_CHAR = (byte)0x7E;
 
     // Allow worst-case space for all characters being escaped!
     private final byte[] buffer = new byte[2 * MRU + BUFFER_SLACK];

@@ -31,6 +31,18 @@ public final class Buffer {
         return data[start + i];
     }
 
+    public int getU8(int i) {
+        return 0xFF & (int)data[start + i];
+    }
+
+    public int getU16(int i) {
+        return getU8(i) << 8 | getU8(i+1);
+    }
+
+    public int getS32(int i) {
+        return getU8(i) << 24 | getU8(i + 1) << 16 | getU8(i + 2) << 8 | getU8(i + 3);
+    }
+
     public void put(int i, byte value) {
         data[start + i] = value;
     }
