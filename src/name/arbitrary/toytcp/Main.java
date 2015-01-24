@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp;
 
+import name.arbitrary.toytcp.ppp.lcp.FrameReader;
+import name.arbitrary.toytcp.ppp.lcp.LcpStateMachine;
 import name.arbitrary.toytcp.ppp.link.PppLink;
 import name.arbitrary.toytcp.ppp.link.PppLinkListener;
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ public class Main {
         logger.info("ToyTCP has started");
 
         PppLink link = new PppLink(System.in);
+        /*
         link.subscribe(0xC021, new PppLinkListener() {
             @Override
             public void onFrame(Buffer buffer) {
@@ -32,6 +35,8 @@ public class Main {
                 logger.info("Link DOWN");
             }
         });
+        */
+        link.subscribe(0xC021, new FrameReader(new LcpStateMachine()));
         link.start();
     }
 }
