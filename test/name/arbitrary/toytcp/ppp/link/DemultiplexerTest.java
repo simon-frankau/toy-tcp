@@ -40,31 +40,6 @@ public class DemultiplexerTest {
     }
 
     @Test
-    public void testAlreadyUpReachesNewSubscriber() {
-        Demultiplexer demultiplexer = new Demultiplexer();
-        demultiplexer.onLinkUp();
-        demultiplexer.subscribe(41, listener);
-        verify(listener).onLinkUp();
-        verifyNoMoreInteractions(listener);
-    }
-
-    @Test
-    public void testUnsubscribeLeadsToDown() {
-        Demultiplexer demultiplexer = new Demultiplexer();
-        demultiplexer.onLinkUp();
-        demultiplexer.subscribe(41, listener);
-        verify(listener).onLinkUp();
-        verifyNoMoreInteractions(listener);
-
-        demultiplexer.unsubscribe(41);
-        verify(listener).onLinkDown();
-        verifyNoMoreInteractions(listener);
-
-        demultiplexer.onLinkDown();
-        verifyNoMoreInteractions(listener);
-    }
-
-    @Test
     public void testEightBitProtocol() {
         Demultiplexer demultiplexer = new Demultiplexer();
         demultiplexer.subscribe(0x41, listener);
@@ -97,5 +72,4 @@ public class DemultiplexerTest {
         demultiplexer.onFrame(new Buffer(0xF0, 0x43));
         verifyNoMoreInteractions(listener);
     }
-
 }

@@ -10,9 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handles subscriptions (one per protocol) and demultiplexes frames based on protocol.
  *
- * Thread model is a bit funny. Up/down messages can come from the underlying connection, or from (un)subscription,
- * but if (un)subscription comes on a different thread than the usual frame processing, you might get frames arriving
- * before/after the associate (un)subscription.
+ * Subscriptions must not be changed once the link is up, as I don't want to have to deal race conditions where I
+ * don't need to.
  */
 class Demultiplexer implements PppLinkListener {
     private static final Logger logger = LoggerFactory.getLogger(Demultiplexer.class);
@@ -21,20 +20,16 @@ class Demultiplexer implements PppLinkListener {
 
     private boolean isLinkUp;
 
-    public synchronized void subscribe(int protocol, PppLinkListener listener) {
+    public void subscribe(int protocol, PppLinkListener listener) {
+        assert !isLinkUp;
         assert !listeners.containsKey(protocol);
         listeners.put(protocol, listener);
-        if (isLinkUp) {
-            listener.onLinkUp();
-        }
     }
 
-    public synchronized void unsubscribe(int protocol) {
+    public void unsubscribe(int protocol) {
+        assert !isLinkUp;
         assert listeners.containsKey(protocol);
-        PppLinkListener listener = listeners.remove(protocol);
-        if (isLinkUp) {
-            listener.onLinkDown();
-        }
+        listeners.remove(protocol);
     }
 
     @Override
@@ -63,7 +58,7 @@ class Demultiplexer implements PppLinkListener {
     }
 
     @Override
-    public synchronized void onLinkUp() {
+    public void onLinkUp() {
         assert !isLinkUp;
         isLinkUp = true;
         for (PppLinkListener listener : listeners.values()) {
@@ -72,7 +67,7 @@ class Demultiplexer implements PppLinkListener {
     }
 
     @Override
-    public synchronized void onLinkDown() {
+    public void onLinkDown() {
         assert isLinkUp;
         isLinkUp = false;
         for (PppLinkListener listener : listeners.values()) {
