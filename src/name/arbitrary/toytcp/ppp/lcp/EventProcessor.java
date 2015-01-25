@@ -9,6 +9,14 @@ import java.util.List;
  * An interface to represent something that can process LCP frames/events.
  */
 public interface EventProcessor {
+    void onLinkUp();
+
+    void onLinkDown();
+
+    void onOpen();
+
+    void onClose();
+
     void onConfigureRequest(byte identifier, List<Option> options);
 
     void onConfigureAck(byte identifier, List<Option> options);
@@ -32,8 +40,4 @@ public interface EventProcessor {
     void onDiscardRequest(byte identifier, Buffer buffer);
 
     void onUnknownCode(byte code, byte identifier, Buffer buffer);
-
-    void onLinkUp();
-
-    void onLinkDown();
 }
