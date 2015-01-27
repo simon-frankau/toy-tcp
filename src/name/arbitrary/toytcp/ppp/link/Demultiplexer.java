@@ -10,8 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handles subscriptions (one per protocol) and demultiplexes frames based on protocol.
  *
- * Subscriptions must not be changed once the link is up, as I don't want to have to deal race conditions where I
- * don't need to.
+ * Subscriptions must not be changed once the link is up, to keep thing simple.
  */
 class Demultiplexer implements PppLinkListener {
     private static final Logger logger = LoggerFactory.getLogger(Demultiplexer.class);
