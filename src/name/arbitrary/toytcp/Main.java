@@ -3,13 +3,10 @@ package name.arbitrary.toytcp;
 import name.arbitrary.toytcp.ppp.lcp.FrameReader;
 import name.arbitrary.toytcp.ppp.lcp.LcpStateMachine;
 import name.arbitrary.toytcp.ppp.link.PppLink;
-import name.arbitrary.toytcp.ppp.link.PppLinkListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -36,7 +33,8 @@ public class Main {
             }
         });
         */
-        link.subscribe(0xC021, new FrameReader(new LcpStateMachine()));
+        // TODO: State machine has changed and needs some new toys before it'll integrate correctly...
+        // link.subscribe(0xC021, new FrameReader(new LcpStateMachine(listener, configChecker)));
         link.start();
     }
 }

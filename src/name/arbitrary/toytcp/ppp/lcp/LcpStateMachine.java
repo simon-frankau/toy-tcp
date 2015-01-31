@@ -13,23 +13,32 @@ import java.util.List;
  * Perhaps could be driven by a table, but by exploding it out and coding it manually, I hope to understand the
  * intention behind the automaton, and handle it a little more neatly.
  *
- * TODO: Very messy right now, obviously.
+ * Yes, I'm one of those people who prefer recursive descent parsers to table-driven ones. :)
  *
  * TODO: No timeouts yet.
+ * TODO: Still somewhat messy.
  */
 public class LcpStateMachine implements EventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(LcpStateMachine.class);
 
+    private final LcpStateActionListener listener;
+    private final LcpConfigChecker configChecker;
+
     private State state = State.INITIAL;
 
+    public LcpStateMachine(LcpStateActionListener listener, LcpConfigChecker configChecker) {
+        this.listener = listener;
+        this.configChecker = configChecker;
+    }
+
     enum State {
-        INITIAL,
-        STARTING,
-        CLOSED,
-        STOPPED,
+        INITIAL,  // Down, closed
+        STARTING, // Down, open
+        CLOSED,   // Up, closed
+        STOPPED,  // Up, open
         CLOSING,
         STOPPING,
-        REQ_SENT,
+        REQ_SENT, // Up, open, sending
         ACK_RCVD,
         ACK_SENT,
         OPENED
@@ -38,44 +47,23 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onLinkUp() {
         logger.info("Link up");
-        switch (state) {
-            case INITIAL:
-                state = State.CLOSED;
-                break;
-            case STARTING:
-                // TODO: irc, scr
-                state = State.REQ_SENT;
-                break;
-            default:
-                throw new RuntimeException("Link up in state " + state);
+        if (state == State.INITIAL) {
+            setState(State.CLOSED);
+        } else if (state == State.STARTING) {
+            initialRequest();
+        } else {
+            throw new RuntimeException("Should not happen: LinkUp when already up");
         }
     }
 
     @Override
     public void onLinkDown() {
         logger.info("Link down");
-        switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Link down in state " + state);
-            case CLOSED:
-            case CLOSING:
-                state = State.INITIAL;
-                break;
-            case STOPPED:
-                // TODO: tls
-                state = State.STARTING;
-                break;
-            case OPENED:
-                // TODO: tld
-                state = State.STARTING;
-                break;
-            case STOPPING:
-            case REQ_SENT:
-            case ACK_RCVD:
-            case ACK_SENT:
-                state = State.STARTING;
-                break;
+        checkNotDown(); // Shouldn't be down yet!
+        if (state == State.CLOSED || state == State.CLOSING) {
+            setState(State.INITIAL);
+        } else {
+            setState(State.STARTING);
         }
     }
 
@@ -84,26 +72,13 @@ public class LcpStateMachine implements EventProcessor {
         logger.info("Link open");
         switch (state) {
             case INITIAL:
-                // TODO tls
-                state = State.STARTING;
-                break;
-            case STARTING:
-                state = State.STARTING;
+                setState(State.STARTING);
                 break;
             case CLOSED:
-                // TODO irc,scr
-                state = State.REQ_SENT;
+                initialRequest();
                 break;
-            case STOPPED:
             case CLOSING:
-            case STOPPING:
-            case OPENED:
-                // TODO restart option
-                break;
-            case REQ_SENT:
-            case ACK_RCVD:
-            case ACK_SENT:
-                // Remains in same state.
+                setState(State.STOPPING);
                 break;
         }
     }
@@ -112,81 +87,59 @@ public class LcpStateMachine implements EventProcessor {
     public void onClose() {
         logger.info("Link close");
         switch (state) {
-            case INITIAL:
-                state = State.INITIAL;
-                break;
             case STARTING:
-                // TODO tlf
-                state = State.INITIAL;
+                setState(State.INITIAL);
                 break;
-            case CLOSED:
             case STOPPED:
-                state = State.CLOSED;
+                setState(State.CLOSED);
                 break;
-            case CLOSING:
             case STOPPING:
-                state = State.CLOSING;
+                setState(State.CLOSING);
                 break;
             case REQ_SENT:
             case ACK_RCVD:
             case ACK_SENT:
-                // TODO irc,str
-                state = State.CLOSING;
-                break;
             case OPENED:
-                // TODO tld,irc,str
-                state = State.CLOSING;
+                listener.onInitializeRestartCount();
+                listener.onSendTerminateRequest();
+                setState(State.CLOSING);
                 break;
         }
     }
 
     @Override
     public void onConfigureRequest(byte identifier, List<Option> options) {
-        boolean configOk = true;
         logger.info("ConfigureRequest {} {}", identifier, options);
+        checkNotDown();
+        boolean configOk = configChecker.isConfigAcceptable(options);
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Config request in state " + state);
             case CLOSED:
-                // TODO sta
+                // Sorry, we're closed.
+                listener.onSendTerminateAcknowledge();
                 break;
             case STOPPED:
-                // TODO irc,scr,sc[an]
-                if (configOk) {
-                    state = State.ACK_SENT;
-                } else {
-                    state = State.REQ_SENT;
-                }
-                break;
-            case CLOSING:
-            case STOPPING:
-                break;
+                listener.onInitializeRestartCount();
+                // Fall through
+            case OPENED:
+                listener.onSendConfigureRequest();
+                // Fall through...
             case REQ_SENT:
             case ACK_SENT:
-                // TODO sc[an]
-                state = State.ACK_SENT;
                 if (configOk) {
-                    state = State.ACK_SENT;
+                    listener.onSendConfigureAcknowledge();
+                    setState(State.ACK_SENT);
                 } else {
-                    state = State.REQ_SENT;
+                    listener.onSendConfigureNak();
+                    setState(State.REQ_SENT);
                 }
                 break;
             case ACK_RCVD:
-                // TODO sc[an], tlu
-                state = State.ACK_SENT;
                 if (configOk) {
-                    state = State.OPENED;
+                    listener.onSendConfigureAcknowledge();
+                    setState(State.OPENED);
                 } else {
-                    state = State.REQ_SENT;
-                }
-                break;
-            case OPENED:
-                // TODO tld, scr, sc[an]
-                if (configOk) {
-                    state = State.ACK_SENT;
-                } else {
-                    state = State.REQ_SENT;
+                    listener.onSendConfigureNak();
+                    setState(State.ACK_RCVD);
                 }
                 break;
         }
@@ -195,32 +148,26 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onConfigureAck(byte identifier, List<Option> options) {
         logger.info("ConfigureAck {} {}", identifier, options);
+        checkNotDown();
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Config ack in state " + state);
             case CLOSED:
             case STOPPED:
-                // TODO sta
-                break;
-            case CLOSING:
-            case STOPPING:
-                break;
-            case REQ_SENT:
-                // TODO irc
-                state = State.ACK_RCVD;
+                // Hmmm. Not right.
+                listener.onSendTerminateAcknowledge();
                 break;
             case ACK_RCVD:
-                // TODO scr/x
-                state = State.REQ_SENT;
+            case OPENED:
+                // Hmm. Already had ack. Return to base configuring state.
+                listener.onSendConfigureRequest();
+                setState(State.REQ_SENT);
+                break;
+            case REQ_SENT:
+                listener.onInitializeRestartCount();
+                setState(State.ACK_RCVD);
                 break;
             case ACK_SENT:
-                // TODO irc, tlu
-                state = State.OPENED;
-                break;
-            case OPENED:
-                // TODO tld,  scr x
-                state = State.REQ_SENT;
+                listener.onInitializeRestartCount();
+                setState(State.OPENED);
                 break;
         }
     }
@@ -228,31 +175,25 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onConfigureNak(byte identifier, List<Option> options) {
         logger.info("ConfigureNak {} {}", identifier, options);
+        checkNotDown();
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Config nak in state " + state);
             case CLOSED:
             case STOPPED:
-                // TODO sta
-                break;
-            case CLOSING:
-            case STOPPING:
+                // Hmmm. Not right.
+                listener.onSendTerminateAcknowledge();
                 break;
             case REQ_SENT:
-                // TODO irc, scr
-                break;
+                listener.onInitializeRestartCount();
+                // Fall through.
             case ACK_RCVD:
-                // TODO scr/x
-                state = State.REQ_SENT;
+            case OPENED:
+                listener.onSendConfigureRequest();
+                setState(State.REQ_SENT);
                 break;
             case ACK_SENT:
-                // TODO irc, scr
-                state = State.ACK_SENT;
-                break;
-            case OPENED:
-                // TODO tld,  scr x
-                state = State.REQ_SENT;
+                listener.onInitializeRestartCount();
+                listener.onSendConfigureRequest();
+                setState(State.ACK_SENT);
                 break;
         }
     }
@@ -266,25 +207,16 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onReceiveTerminateRequest(byte identifier, Buffer buffer) {
         logger.info("ReceiveTerminateRequest {} {}", identifier, buffer);
+        checkNotDown();
+        listener.onSendTerminateAcknowledge();
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Terminate request in state " + state);
-            case CLOSED:
-            case STOPPED:
-            case CLOSING:
-            case STOPPING:
-            case REQ_SENT:
-                // sta
-                break;
             case ACK_RCVD:
             case ACK_SENT:
-                // sta
-                state = State.REQ_SENT;
+                setState(State.REQ_SENT);
                 break;
             case OPENED:
-                // tld, zrc, sta
-                state = State.STOPPING;
+                listener.onZeroRestartCount();
+                setState(State.STOPPING);
                 break;
         }
     }
@@ -292,53 +224,31 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onReceiveTerminateAck(byte identifier, Buffer buffer) {
         logger.info("ReceiveTerminateAck {} {}", identifier, buffer);
+        checkNotDown();
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Terminate request in state " + state);
-            case CLOSED:
-            case STOPPED:
-                break;
             case CLOSING:
-                // tlf
-                state = State.CLOSED;
+                setState(State.CLOSED);
                 break;
             case STOPPING:
-                // tlf
-                state = State.STOPPING;
-                break;
-            case REQ_SENT:
-            case ACK_RCVD:
-                state = State.REQ_SENT;
-                break;
-            case ACK_SENT:
+                setState(State.STOPPED);
                 break;
             case OPENED:
-                // tld, src
-                state = State.REQ_SENT;
+                listener.onSendConfigureRequest();
+                // Fall through
+            case REQ_SENT:
+            case ACK_RCVD:
+                setState(State.REQ_SENT);
+                break;
+            case ACK_SENT:
                 break;
         }
     }
 
-
     @Override
     public void onUnknownCode(byte code, byte identifier, Buffer buffer) {
         logger.warn("Received unknown code: {} {} {}", code, identifier, buffer);
-        switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("Unknown code in state " + state);
-            case CLOSED:
-            case STOPPED:
-            case CLOSING:
-            case STOPPING:
-            case REQ_SENT:
-            case ACK_RCVD:
-            case ACK_SENT:
-            case OPENED:
-                // scj
-                break;
-        }
+        checkNotDown();
+        listener.onSendCodeReject();
     }
 
     @Override
@@ -354,7 +264,7 @@ public class LcpStateMachine implements EventProcessor {
     }
 
     private void receiveReject(byte identifier, Buffer rejected) {
-        boolean isOk = true;
+        boolean isOk = configChecker.isRejectAcceptable(rejected);
         if (isOk) {
             receiveAcceptableReject(identifier, rejected);
         } else {
@@ -364,38 +274,30 @@ public class LcpStateMachine implements EventProcessor {
 
     private void receiveAcceptableReject(byte identifier, Buffer rejected) {
         logger.info("AcceptableReject");
-        switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("AcceptableReject in state " + state);
-            case ACK_RCVD:
-                state = State.REQ_SENT;
-                break;
+        checkNotDown();
+        if (state == State.ACK_RCVD) {
+            setState(State.REQ_SENT);
         }
     }
 
     private void receiveCatastrophicReject(byte identifier, Buffer rejected) {
         logger.info("CatastrophicReject");
+        checkNotDown();
         switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("CatastrophicReject in state " + state);
-            case CLOSED:
             case CLOSING:
-                // tlf
-                state = State.CLOSED;
+                setState(State.CLOSED);
+                break;
+            case OPENED:
+                listener.onInitializeRestartCount();
+                listener.onSendTerminateRequest();
+                setState(State.STOPPING);
                 break;
             case STOPPED:
             case STOPPING:
             case REQ_SENT:
             case ACK_RCVD:
             case ACK_SENT:
-                // tlf
-                state = State.STOPPED;
-                break;
-            case OPENED:
-                // tld, irc, str
-                state = State.STOPPING;
+                setState(State.STOPPED);
                 break;
         }
     }
@@ -403,42 +305,75 @@ public class LcpStateMachine implements EventProcessor {
     @Override
     public void onEchoRequest(byte identifier, Buffer buffer) {
         logger.info("EchoRequest {} {}", identifier, buffer);
-        switch (state) {
-            case INITIAL:
-            case STARTING:
-                throw new RuntimeException("EchoRequest in state " + state);
-            case CLOSED:
-            case STOPPED:
-            case CLOSING:
-            case STOPPING:
-            case REQ_SENT:
-            case ACK_RCVD:
-            case ACK_SENT:
-                break;
-            case OPENED:
-                // ser
-                break;
+        checkNotDown();
+        if (state == State.OPENED) {
+            listener.onSendEchoReply();
         }
     }
 
     @Override
     public void onEchoReply(byte identifier, Buffer buffer) {
         logger.info("EchoReply {} {}", identifier, buffer);
+        checkNotDown();
         // No need to take further action...
     }
 
     @Override
     public void onDiscardRequest(byte identifier, Buffer buffer) {
         logger.info("DiscardRequest {} {}", identifier, buffer);
+        checkNotDown();
         // No need to take further action...
     }
 
-    // Getter and setter for testing.
-    State getState() {
-        return state;
+    private void checkNotDown() {
+        // Most events should not be possible in a link-down state.
+        if (state == State.INITIAL || state == State.STARTING) {
+            throw new RuntimeException("Should not happen: Event received while down");
+        }
     }
 
-    void setState(State state) {
+    void setState(State newState) {
+        if (!isUpState(state) && isUpState(newState)) {
+            listener.onThisLayerUp();
+        }
+        if (isUpState(state) && !isUpState(newState)) {
+            listener.onThisLayerDown();
+        }
+
+        // Hmmm. I disagree with the state machine!
+        if (!isFinishingState(state) && isFinishingState(newState)) {
+            listener.onThisLayerFinished();
+        }
+        if (isFinishingState(state) && !isFinishingState(newState)) {
+            listener.onThisLayerStarted();
+        }
+
+        this.state = newState;
+    }
+
+    // Initial move into Open and Up.
+    private void initialRequest() {
+        listener.onInitializeRestartCount();
+        listener.onSendConfigureRequest();
+        setState(State.REQ_SENT);
+    }
+
+    private boolean isUpState(State state) {
+        return state == State.OPENED;
+    }
+
+    private boolean isFinishingState(State state) {
+        return state == State.INITIAL || state == State.CLOSED || state == State.STOPPED;
+    }
+
+    // Getter and setter for testing.
+
+    // Transition to state without ceremony.
+    void forceState(State state) {
         this.state = state;
+    }
+
+    State getState() {
+        return state;
     }
 }
