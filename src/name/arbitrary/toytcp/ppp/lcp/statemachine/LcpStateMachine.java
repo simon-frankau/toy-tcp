@@ -1,4 +1,4 @@
-package name.arbitrary.toytcp.ppp.lcp;
+package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
@@ -21,13 +21,20 @@ import java.util.List;
 public class LcpStateMachine implements EventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(LcpStateMachine.class);
 
-    private final LcpStateActionListener listener;
+    private final LcpUpperLayerListener upperListener;
+    private final ActionProcessor listener;
+    private final LcpRestartCounter restartCounter;
     private final LcpConfigChecker configChecker;
 
     private State state = State.INITIAL;
 
-    public LcpStateMachine(LcpStateActionListener listener, LcpConfigChecker configChecker) {
+    public LcpStateMachine(LcpUpperLayerListener upperListener,
+                           ActionProcessor listener,
+                           LcpRestartCounter restartCounter,
+                           LcpConfigChecker configChecker) {
+        this.upperListener = upperListener;
         this.listener = listener;
+        this.restartCounter = restartCounter;
         this.configChecker = configChecker;
     }
 
@@ -100,7 +107,7 @@ public class LcpStateMachine implements EventProcessor {
             case ACK_RCVD:
             case ACK_SENT:
             case OPENED:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 listener.onSendTerminateRequest();
                 setState(State.CLOSING);
                 break;
@@ -118,7 +125,7 @@ public class LcpStateMachine implements EventProcessor {
                 listener.onSendTerminateAcknowledge();
                 break;
             case STOPPED:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 // Fall through
             case OPENED:
                 listener.onSendConfigureRequest();
@@ -162,11 +169,11 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.REQ_SENT);
                 break;
             case REQ_SENT:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 setState(State.ACK_RCVD);
                 break;
             case ACK_SENT:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 setState(State.OPENED);
                 break;
         }
@@ -183,7 +190,7 @@ public class LcpStateMachine implements EventProcessor {
                 listener.onSendTerminateAcknowledge();
                 break;
             case REQ_SENT:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 // Fall through.
             case ACK_RCVD:
             case OPENED:
@@ -191,7 +198,7 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.REQ_SENT);
                 break;
             case ACK_SENT:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 listener.onSendConfigureRequest();
                 setState(State.ACK_SENT);
                 break;
@@ -215,7 +222,7 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.REQ_SENT);
                 break;
             case OPENED:
-                listener.onZeroRestartCount();
+                restartCounter.onZeroRestartCount();
                 setState(State.STOPPING);
                 break;
         }
@@ -288,7 +295,7 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.CLOSED);
                 break;
             case OPENED:
-                listener.onInitializeRestartCount();
+                restartCounter.onInitializeRestartCount();
                 listener.onSendTerminateRequest();
                 setState(State.STOPPING);
                 break;
@@ -333,11 +340,13 @@ public class LcpStateMachine implements EventProcessor {
     }
 
     void setState(State newState) {
+        logger.trace("Switching to state {}", newState);
+
         if (!isUpState(state) && isUpState(newState)) {
-            listener.onThisLayerUp();
+            upperListener.onThisLayerUp();
         }
         if (isUpState(state) && !isUpState(newState)) {
-            listener.onThisLayerDown();
+            upperListener.onThisLayerDown();
         }
 
         // Hmmm. I disagree with the state machine!
@@ -353,7 +362,7 @@ public class LcpStateMachine implements EventProcessor {
 
     // Initial move into Open and Up.
     private void initialRequest() {
-        listener.onInitializeRestartCount();
+        restartCounter.onInitializeRestartCount();
         listener.onSendConfigureRequest();
         setState(State.REQ_SENT);
     }

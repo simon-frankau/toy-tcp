@@ -2,6 +2,7 @@ package name.arbitrary.toytcp.ppp.lcp;
 
 import name.arbitrary.toytcp.Buffer;
 import name.arbitrary.toytcp.ppp.lcp.options.OptionsReader;
+import name.arbitrary.toytcp.ppp.lcp.statemachine.EventProcessor;
 import name.arbitrary.toytcp.ppp.link.PppLinkListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

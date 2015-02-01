@@ -1,6 +1,7 @@
-package name.arbitrary.toytcp.ppp.lcp;
+package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.ppp.lcp.statemachine.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static name.arbitrary.toytcp.ppp.lcp.LcpStateMachine.State.*;
+import static name.arbitrary.toytcp.ppp.lcp.statemachine.LcpStateMachine.State.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -28,7 +29,11 @@ public class LcpStateMachineTest {
     @Mock
     private LcpConfigChecker configChecker;
     @Mock
-    private LcpStateActionListener stateActionListener;
+    private ActionProcessor stateActionListener;
+    @Mock
+    private LcpUpperLayerListener upperListener;
+    @Mock
+    private LcpRestartCounter restartCounter;
 
     private LcpStateMachine stateMachine;
     private Runnable transition;
@@ -51,7 +56,7 @@ public class LcpStateMachineTest {
 
     @Before
     public void setup() {
-        stateMachine = new LcpStateMachine(stateActionListener, configChecker);
+        stateMachine = new LcpStateMachine(upperListener, stateActionListener, restartCounter, configChecker);
     }
 
     @Test
@@ -137,7 +142,6 @@ public class LcpStateMachineTest {
                 stateMachine.onConfigureRequest((byte) 0, null);
             }
         };
-
 
         checkTransition(CLOSED, CLOSED, Actions.STA);
         checkTransition(STOPPED, ACK_SENT, Actions.IRC, Actions.SCR, Actions.SCA, Actions.TLS); // Extra TLS compared to RFC
@@ -392,20 +396,20 @@ public class LcpStateMachineTest {
                                  LcpStateMachine.State endState,
                                  Actions... actions) {
         stateMachine.forceState(startState);
-        reset(configChecker, stateActionListener);
+        reset(configChecker, stateActionListener, upperListener, restartCounter);
         transition.run();
         assertEquals(endState, stateMachine.getState());
 
         for (Actions action : actions) {
             switch (action) {
                 case IRC:
-                    verify(stateActionListener).onInitializeRestartCount();
+                    verify(restartCounter).onInitializeRestartCount();
                     break;
                 case SCR:
                     verify(stateActionListener).onSendConfigureRequest();
                     break;
                 case TLD:
-                    verify(stateActionListener).onThisLayerDown();
+                    verify(upperListener).onThisLayerDown();
                     break;
                 case SER:
                     verify(stateActionListener).onSendEchoReply();
@@ -414,7 +418,7 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).onThisLayerFinished();
                     break;
                 case TLU:
-                    verify(stateActionListener).onThisLayerUp();
+                    verify(upperListener).onThisLayerUp();
                     break;
                 case TLS:
                     verify(stateActionListener).onThisLayerStarted();
@@ -435,10 +439,10 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).onSendCodeReject();
                     break;
                 case ZRC:
-                    verify(stateActionListener).onZeroRestartCount();
+                    verify(restartCounter).onZeroRestartCount();
                     break;
             }
         }
-        verifyNoMoreInteractions(stateActionListener);
+        verifyNoMoreInteractions(stateActionListener, upperListener, restartCounter);
     }
 }

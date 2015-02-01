@@ -1,22 +1,16 @@
-package name.arbitrary.toytcp.ppp.lcp;
+package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 /**
- * Interface for the actions that the state machine spits out.
+ * Interface for the messages to send out and link layer actions associated with state machine actions.
  */
-public interface LcpStateActionListener {
-    void onInitializeRestartCount();
-
+public interface ActionProcessor {
     void onSendConfigureRequest();
-
-    void onThisLayerDown();
 
     void onSendCodeReject();
 
     void onSendEchoReply();
 
     void onThisLayerFinished();
-
-    void onThisLayerUp();
 
     void onThisLayerStarted();
 
@@ -27,6 +21,4 @@ public interface LcpStateActionListener {
     void onSendConfigureAcknowledge();
 
     void onSendConfigureNak();
-
-    void onZeroRestartCount();
 }

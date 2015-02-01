@@ -1,4 +1,4 @@
-package name.arbitrary.toytcp.ppp.lcp;
+package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
