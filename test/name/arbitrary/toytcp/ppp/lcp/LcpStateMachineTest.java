@@ -12,7 +12,7 @@ import java.util.*;
 import static name.arbitrary.toytcp.ppp.lcp.LcpStateMachine.State.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /*
  * Exercises the state machine against RFC 1661.
@@ -27,9 +27,8 @@ import static org.mockito.Mockito.when;
 public class LcpStateMachineTest {
     @Mock
     private LcpConfigChecker configChecker;
-
-    private final LcpStateActionListener stateActionListener = new ActionRecorder();
-    private final Set<Actions> actions = EnumSet.noneOf(Actions.class);
+    @Mock
+    private LcpStateActionListener stateActionListener;
 
     private LcpStateMachine stateMachine;
     private Runnable transition;
@@ -134,11 +133,11 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(true);
                 stateMachine.onConfigureRequest((byte) 0, null);
             }
         };
 
-        when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(true);
 
         checkTransition(CLOSED, CLOSED, Actions.STA);
         checkTransition(STOPPED, ACK_SENT, Actions.IRC, Actions.SCR, Actions.SCA, Actions.TLS); // Extra TLS compared to RFC
@@ -156,10 +155,10 @@ public class LcpStateMachineTest {
             @Override
             public void run() {
                 stateMachine.onConfigureRequest((byte)0, null);
+                when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(false);
+
             }
         };
-
-        when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(false);
 
         checkTransition(CLOSED, CLOSED, Actions.STA);
         checkTransition(STOPPED, REQ_SENT, Actions.IRC, Actions.SCR, Actions.SCN, Actions.TLS); // Extra TLS compared to RFC
@@ -271,11 +270,12 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(true);
                 stateMachine.onCodeReject((byte) 0, null);
             }
         };
 
-        testPermittedCodeOrProtocolReject();
+        checkPermittedCodeOrProtocolReject();
     }
 
     @Test
@@ -283,16 +283,15 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(true);
                 stateMachine.onProtocolReject((byte) 0, null);
             }
         };
 
-        testPermittedCodeOrProtocolReject();
+        checkPermittedCodeOrProtocolReject();
     }
 
-    private void testPermittedCodeOrProtocolReject() {
-        when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(true);
-
+    private void checkPermittedCodeOrProtocolReject() {
         checkTransition(CLOSED, CLOSED);
         checkTransition(STOPPED, STOPPED);
         checkTransition(CLOSING, CLOSING);
@@ -308,11 +307,12 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(false);
                 stateMachine.onCodeReject((byte) 0, null);
             }
         };
 
-        testCatastrophicCodeOrProtocolReject();
+        checkCatastrophicCodeOrProtocolReject();
     }
 
     @Test
@@ -320,16 +320,15 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(false);
                 stateMachine.onCodeReject((byte) 0, null);
             }
         };
 
-        testCatastrophicCodeOrProtocolReject();
+        checkCatastrophicCodeOrProtocolReject();
     }
 
-    private void testCatastrophicCodeOrProtocolReject() {
-        when(configChecker.isRejectAcceptable(any(Buffer.class))).thenReturn(false);
-
+    private void checkCatastrophicCodeOrProtocolReject() {
         checkTransition(CLOSED, CLOSED); // No TLF, compared to RFC
         checkTransition(STOPPED, STOPPED); // No TLF, compared to RFC
         checkTransition(CLOSING, CLOSED, Actions.TLF);
@@ -393,81 +392,53 @@ public class LcpStateMachineTest {
                                  LcpStateMachine.State endState,
                                  Actions... actions) {
         stateMachine.forceState(startState);
-        this.actions.clear();
+        reset(configChecker, stateActionListener);
         transition.run();
         assertEquals(endState, stateMachine.getState());
-        assertEquals(new HashSet<Actions>(Arrays.asList(actions)), this.actions);
-    }
 
-    private class ActionRecorder implements LcpStateActionListener {
-        @Override
-        public void onInitializeRestartCount() {
-            add(Actions.IRC);
+        for (Actions action : actions) {
+            switch (action) {
+                case IRC:
+                    verify(stateActionListener).onInitializeRestartCount();
+                    break;
+                case SCR:
+                    verify(stateActionListener).onSendConfigureRequest();
+                    break;
+                case TLD:
+                    verify(stateActionListener).onThisLayerDown();
+                    break;
+                case SER:
+                    verify(stateActionListener).onSendEchoReply();
+                    break;
+                case TLF:
+                    verify(stateActionListener).onThisLayerFinished();
+                    break;
+                case TLU:
+                    verify(stateActionListener).onThisLayerUp();
+                    break;
+                case TLS:
+                    verify(stateActionListener).onThisLayerStarted();
+                    break;
+                case STA:
+                    verify(stateActionListener).onSendTerminateAcknowledge();
+                    break;
+                case STR:
+                    verify(stateActionListener).onSendTerminateRequest();
+                    break;
+                case SCA:
+                    verify(stateActionListener).onSendConfigureAcknowledge();
+                    break;
+                case SCN:
+                    verify(stateActionListener).onSendConfigureNak();
+                    break;
+                case SCJ:
+                    verify(stateActionListener).onSendCodeReject();
+                    break;
+                case ZRC:
+                    verify(stateActionListener).onZeroRestartCount();
+                    break;
+            }
         }
-
-        @Override
-        public void onSendConfigureRequest() {
-            add(Actions.SCR);
-        }
-
-        @Override
-        public void onThisLayerDown() {
-            add(Actions.TLD);
-        }
-
-        @Override
-        public void onSendCodeReject() {
-            add(Actions.SCJ);
-        }
-
-        @Override
-        public void onSendEchoReply() {
-            add(Actions.SER);
-        }
-
-        @Override
-        public void onThisLayerFinished() {
-            add(Actions.TLF);
-        }
-
-        @Override
-        public void onThisLayerUp() {
-            add(Actions.TLU);
-        }
-
-        @Override
-        public void onThisLayerStarted() {
-            add(Actions.TLS);
-        }
-
-        @Override
-        public void onSendTerminateAcknowledge() {
-            add(Actions.STA);
-        }
-
-        @Override
-        public void onSendTerminateRequest() {
-            add(Actions.STR);
-        }
-
-        @Override
-        public void onSendConfigureAcknowledge() {
-            add(Actions.SCA);
-        }
-
-        @Override
-        public void onSendConfigureNak() {
-            add(Actions.SCN);
-        }
-
-        @Override
-        public void onZeroRestartCount() {
-            add(Actions.ZRC);
-        }
-
-        private void add(Actions action) {
-            assertFalse(actions.contains(action));
-            actions.add(action);
-        }
+        verifyNoMoreInteractions(stateActionListener);
     }
 }
