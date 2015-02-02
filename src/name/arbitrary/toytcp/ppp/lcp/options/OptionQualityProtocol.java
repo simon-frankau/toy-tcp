@@ -10,9 +10,19 @@ public class OptionQualityProtocol implements Option {
     private final Buffer data;
 
     public OptionQualityProtocol(int qualityProtocol, Buffer data) {
-
         this.qualityProtocol = qualityProtocol;
         this.data = data;
+    }
+
+    @Override
+    public ResponseType getResponseType() {
+        // Nope, we're not doing any form of quality protocol.
+        return ResponseType.REJECT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always reject");
     }
 
     @Override

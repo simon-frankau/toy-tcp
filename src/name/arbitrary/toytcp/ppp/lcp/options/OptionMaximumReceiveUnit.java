@@ -11,6 +11,18 @@ public final class OptionMaximumReceiveUnit implements Option {
     }
 
     @Override
+    public ResponseType getResponseType() {
+        // This one's basically advisory (says it can receive larger, or request smaller
+        // but still must be able to cope with MRU, so we just say "Yeah, whatever".
+        return ResponseType.ACCEPT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always accept");
+    }
+
+    @Override
     public String toString() {
         return "OptionMaximumReceiveUnit{" +
                 "maximumReceiveUnit=" + maximumReceiveUnit +

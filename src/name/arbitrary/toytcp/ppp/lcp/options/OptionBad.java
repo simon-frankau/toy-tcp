@@ -15,6 +15,16 @@ public final class OptionBad implements Option {
     }
 
     @Override
+    public ResponseType getResponseType() {
+        return ResponseType.REJECT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
     public String toString() {
         return "OptionBad{" +
                 "type=" + type +

@@ -11,6 +11,17 @@ public final class OptionMagicNumber implements Option {
     }
 
     @Override
+    public ResponseType getResponseType() {
+        // I can't really be bothered with implementing this correctly. So, not at all.
+        return ResponseType.REJECT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
     public String toString() {
         return "OptionMagicNumber{" +
                 "magicNumber=" + magicNumber +

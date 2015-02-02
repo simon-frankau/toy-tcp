@@ -27,4 +27,14 @@ public class OptionMaximumReceiveUnitTest {
                         new Buffer(0x42, 0x43, 0x44)));
     }
 
+    @Test
+    public void testRequestIsAccepted() {
+        assertEquals(Option.ResponseType.ACCEPT,
+                new OptionMaximumReceiveUnit(0x0102).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionMaximumReceiveUnit(0x0102).getAcceptableVersion();
+    }
 }

@@ -19,4 +19,15 @@ public class OptionAuthenticationProtocolTest {
                 OptionsReader.readOption(OptionsReader.AUTHENTICATION_PROTOCOL,
                         new Buffer(0x42)));
     }
+
+    @Test
+    public void testRequestIsRejected() {
+        assertEquals(Option.ResponseType.REJECT,
+                new OptionAuthenticationProtocol(0xFFFE, new Buffer(0xA0, 0xB0)).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionAuthenticationProtocol(0xFFFE, new Buffer(0xA0, 0xB0)).getAcceptableVersion();
+    }
 }

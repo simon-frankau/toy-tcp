@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
-import name.arbitrary.toytcp.ppp.lcp.statemachine.*;
+import name.arbitrary.toytcp.WriteBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -430,10 +430,10 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).onSendTerminateRequest();
                     break;
                 case SCA:
-                    verify(stateActionListener).onSendConfigureAcknowledge();
+                    verify(stateActionListener).onSendConfigureAcknowledge(anyByte(), any(List.class));
                     break;
                 case SCN:
-                    verify(stateActionListener).onSendConfigureNak();
+                    verify(stateActionListener).onSendConfigureNak(any(WriteBuffer.class));
                     break;
                 case SCJ:
                     verify(stateActionListener).onSendCodeReject();

@@ -12,4 +12,15 @@ public class OptionBadTest {
     public void testCreateOnUnknownType() {
         assertEquals(new OptionBad((byte)0xA0, new Buffer()), OptionsReader.readOption((byte)0xA0, new Buffer()));
     }
+
+    @Test
+    public void testRequestIsRejected() {
+        assertEquals(Option.ResponseType.REJECT,
+                new OptionBad((byte)0xA0, new Buffer()).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionBad((byte)0xA0, new Buffer()).getAcceptableVersion();
+    }
 }

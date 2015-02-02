@@ -1,5 +1,6 @@
 package name.arbitrary.toytcp;
 
+import name.arbitrary.toytcp.ppp.lcp.DefaultConfigChecker;
 import name.arbitrary.toytcp.ppp.lcp.FrameReader;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 import name.arbitrary.toytcp.ppp.lcp.statemachine.*;
@@ -84,12 +85,12 @@ public class Main {
             }
 
             @Override
-            public void onSendConfigureAcknowledge() {
+            public void onSendConfigureAcknowledge(byte identifier, List<Option> options) {
                 logger.info("SCA");
             }
 
             @Override
-            public void onSendConfigureNak() {
+            public void onSendConfigureNak(WriteBuffer configNakOrReject) {
                 logger.info("SCN");
             }
         };
@@ -104,17 +105,7 @@ public class Main {
                 logger.info("ZRC");
             }
         };
-        LcpConfigChecker configChecker = new LcpConfigChecker() {
-            @Override
-            public boolean isConfigAcceptable(List<Option> options) {
-                return true;
-            }
-
-            @Override
-            public boolean isRejectAcceptable(Buffer rejected) {
-                return false;
-            }
-        };
+        LcpConfigChecker configChecker = new DefaultConfigChecker();
         LcpStateMachine stateMachine = new LcpStateMachine(listener, actionProcessor,
                                                            restartCounter, configChecker);
         link.subscribe(0xC021, new FrameReader(stateMachine));

@@ -19,4 +19,15 @@ public class OptionQualityProtocolTest {
                 OptionsReader.readOption(OptionsReader.QUALITY_PROTOCOL,
                         new Buffer(0x42)));
     }
+
+    @Test
+    public void testRequestIsRejected() {
+        assertEquals(Option.ResponseType.REJECT,
+                new OptionQualityProtocol(0xFFFE, new Buffer(0xA0, 0xB0)).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionQualityProtocol(0xFFFE, new Buffer(0xA0, 0xB0)).getAcceptableVersion();
+    }
 }

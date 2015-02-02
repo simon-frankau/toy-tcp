@@ -19,4 +19,16 @@ public class OptionProtocolFieldCompressionTest {
                 OptionsReader.readOption(OptionsReader.PROTOCOL_FIELD_COMPRESSION,
                         new Buffer(0x42)));
     }
+
+    @Test
+    public void testRequestIsAccepted() {
+        assertEquals(Option.ResponseType.ACCEPT,
+                OptionProtocolFieldCompression.INSTANCE.getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        OptionProtocolFieldCompression.INSTANCE.getAcceptableVersion();
+    }
+
 }

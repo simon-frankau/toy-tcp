@@ -26,4 +26,15 @@ public class OptionMagicNumberTest {
                 OptionsReader.readOption(OptionsReader.MAGIC_NUMBER,
                         new Buffer(0x42, 0x43, 0x44, 0x45, 0x46)));
     }
+
+    @Test
+    public void testRequestIsRejected() {
+        assertEquals(Option.ResponseType.REJECT,
+                new OptionMagicNumber(0x01020304).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionMagicNumber(0x01020304).getAcceptableVersion();
+    }
 }

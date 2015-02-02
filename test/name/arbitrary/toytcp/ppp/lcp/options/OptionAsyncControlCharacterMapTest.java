@@ -26,4 +26,15 @@ public class OptionAsyncControlCharacterMapTest {
                 OptionsReader.readOption(OptionsReader.ASYNC_CONTROL_CHARACTER_MAP,
                         new Buffer(0x42, 0x43, 0x44, 0x45, 0x46)));
     }
+
+    @Test
+    public void testRequestIsAccepted() {
+        assertEquals(Option.ResponseType.ACCEPT,
+                new OptionAsyncControlCharacterMap(0x01020304).getResponseType());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNoAcceptableAlternativeRequired() {
+        new OptionAsyncControlCharacterMap(0x01020304).getAcceptableVersion();
+    }
 }

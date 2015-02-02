@@ -11,6 +11,17 @@ public final class OptionAsyncControlCharacterMap implements Option {
     }
 
     @Override
+    public ResponseType getResponseType() {
+        // We're happy to escape whatever they ask for.
+        return ResponseType.ACCEPT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always accept");
+    }
+
+    @Override
     public String toString() {
         return "OptionAsyncControlCharacterMap{" +
                 "asyncMap=" + asyncMap +

@@ -133,19 +133,19 @@ public class LcpStateMachine implements EventProcessor {
             case REQ_SENT:
             case ACK_SENT:
                 if (configOk) {
-                    listener.onSendConfigureAcknowledge();
+                    listener.onSendConfigureAcknowledge(identifier, options);
                     setState(State.ACK_SENT);
                 } else {
-                    listener.onSendConfigureNak();
+                    listener.onSendConfigureNak(configChecker.getConfigNakOrReject(identifier));
                     setState(State.REQ_SENT);
                 }
                 break;
             case ACK_RCVD:
                 if (configOk) {
-                    listener.onSendConfigureAcknowledge();
+                    listener.onSendConfigureAcknowledge(identifier, options);
                     setState(State.OPENED);
                 } else {
-                    listener.onSendConfigureNak();
+                    listener.onSendConfigureNak(configChecker.getConfigNakOrReject(identifier));
                     setState(State.ACK_RCVD);
                 }
                 break;

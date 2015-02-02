@@ -16,6 +16,17 @@ public final class OptionAuthenticationProtocol implements Option {
     }
 
     @Override
+    public ResponseType getResponseType() {
+        // Nope, we're not doing any form of authentication.
+        return ResponseType.REJECT;
+    }
+
+    @Override
+    public Option getAcceptableVersion() {
+        throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
     public String toString() {
         return "OptionAuthenticationProtocol{" +
                 "authenticationProtocol=" + authenticationProtocol +
