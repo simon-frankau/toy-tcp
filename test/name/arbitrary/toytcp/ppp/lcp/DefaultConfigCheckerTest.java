@@ -36,13 +36,7 @@ public class DefaultConfigCheckerTest {
 
     @Test
     public void testEmptyConfigIsAcceptable() {
-        assertTrue(checker.isConfigAcceptable(Collections.EMPTY_LIST));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testGetConfigNakOrRejectWhenOkThrows() {
-        checker.isConfigAcceptable(Collections.EMPTY_LIST);
-        checker.getConfigNakOrReject((byte)0);
+        assertEquals(Option.ResponseType.ACCEPT, checker.processIncomingConfigRequest(Collections.EMPTY_LIST));
     }
 
     @Test
@@ -52,7 +46,8 @@ public class DefaultConfigCheckerTest {
 
     @Test
     public void testAckOnlyConfigIsAcceptable() {
-        assertTrue(checker.isConfigAcceptable(Collections.singletonList(ackOption)));
+        assertEquals(Option.ResponseType.ACCEPT,
+                     checker.processIncomingConfigRequest(Collections.singletonList(ackOption)));
     }
 
     @Test
@@ -60,7 +55,8 @@ public class DefaultConfigCheckerTest {
         List<Option> options = new ArrayList<Option>();
         options.add(ackOption);
         options.add(nakOption);
-        assertFalse(checker.isConfigAcceptable(options));
+        assertEquals(Option.ResponseType.NAK,
+                     checker.processIncomingConfigRequest(options));
     }
 
     @Test
@@ -68,6 +64,8 @@ public class DefaultConfigCheckerTest {
         List<Option> options = new ArrayList<Option>();
         options.add(ackOption);
         options.add(nakOption);
-        assertFalse(checker.isConfigAcceptable(options));
+        options.add(rejectOption);
+        assertEquals(Option.ResponseType.REJECT,
+                     checker.processIncomingConfigRequest(options));
     }
 }

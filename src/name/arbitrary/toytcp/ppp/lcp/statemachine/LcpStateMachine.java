@@ -108,7 +108,7 @@ public class LcpStateMachine implements EventProcessor {
             case ACK_SENT:
             case OPENED:
                 restartCounter.onInitializeRestartCount();
-                listener.onSendTerminateRequest();
+                listener.sendTerminateRequest();
                 setState(State.CLOSING);
                 break;
         }
@@ -118,35 +118,49 @@ public class LcpStateMachine implements EventProcessor {
     public void onConfigureRequest(byte identifier, List<Option> options) {
         logger.info("ConfigureRequest {} {}", identifier, options);
         checkNotDown();
-        boolean configOk = configChecker.isConfigAcceptable(options);
+        Option.ResponseType type = configChecker.processIncomingConfigRequest(options);
         switch (state) {
             case CLOSED:
                 // Sorry, we're closed.
-                listener.onSendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge();
                 break;
             case STOPPED:
                 restartCounter.onInitializeRestartCount();
                 // Fall through
             case OPENED:
-                listener.onSendConfigureRequest();
+                listener.sendConfigureRequest();
                 // Fall through...
             case REQ_SENT:
             case ACK_SENT:
-                if (configOk) {
-                    listener.onSendConfigureAcknowledge(identifier, options);
-                    setState(State.ACK_SENT);
-                } else {
-                    listener.onSendConfigureNak(configChecker.getConfigNakOrReject(identifier));
-                    setState(State.REQ_SENT);
+                switch (type) {
+                    case ACCEPT:
+                        listener.sendConfigureAcknowledge(identifier, options);
+                        setState(State.ACK_SENT);
+                        break;
+                    case NAK:
+                        listener.sendConfigureNak(identifier, configChecker.getConfigNakOptions());
+                        setState(State.REQ_SENT);
+                        break;
+                    case REJECT:
+                        listener.sendConfigureReject(identifier, configChecker.getConfigRejectOptions());
+                        setState(State.REQ_SENT);
+                        break;
                 }
                 break;
             case ACK_RCVD:
-                if (configOk) {
-                    listener.onSendConfigureAcknowledge(identifier, options);
-                    setState(State.OPENED);
-                } else {
-                    listener.onSendConfigureNak(configChecker.getConfigNakOrReject(identifier));
-                    setState(State.ACK_RCVD);
+                switch (type) {
+                    case ACCEPT:
+                        listener.sendConfigureAcknowledge(identifier, options);
+                        setState(State.OPENED);
+                        break;
+                    case NAK:
+                        listener.sendConfigureNak(identifier, configChecker.getConfigNakOptions());
+                        setState(State.ACK_RCVD);
+                        break;
+                    case REJECT:
+                        listener.sendConfigureReject(identifier, configChecker.getConfigRejectOptions());
+                        setState(State.ACK_RCVD);
+                        break;
                 }
                 break;
         }
@@ -160,12 +174,12 @@ public class LcpStateMachine implements EventProcessor {
             case CLOSED:
             case STOPPED:
                 // Hmmm. Not right.
-                listener.onSendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge();
                 break;
             case ACK_RCVD:
             case OPENED:
                 // Hmm. Already had ack. Return to base configuring state.
-                listener.onSendConfigureRequest();
+                listener.sendConfigureRequest();
                 setState(State.REQ_SENT);
                 break;
             case REQ_SENT:
@@ -187,19 +201,19 @@ public class LcpStateMachine implements EventProcessor {
             case CLOSED:
             case STOPPED:
                 // Hmmm. Not right.
-                listener.onSendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge();
                 break;
             case REQ_SENT:
                 restartCounter.onInitializeRestartCount();
                 // Fall through.
             case ACK_RCVD:
             case OPENED:
-                listener.onSendConfigureRequest();
+                listener.sendConfigureRequest();
                 setState(State.REQ_SENT);
                 break;
             case ACK_SENT:
                 restartCounter.onInitializeRestartCount();
-                listener.onSendConfigureRequest();
+                listener.sendConfigureRequest();
                 setState(State.ACK_SENT);
                 break;
         }
@@ -215,7 +229,7 @@ public class LcpStateMachine implements EventProcessor {
     public void onReceiveTerminateRequest(byte identifier, Buffer buffer) {
         logger.info("ReceiveTerminateRequest {} {}", identifier, buffer);
         checkNotDown();
-        listener.onSendTerminateAcknowledge();
+        listener.sendTerminateAcknowledge();
         switch (state) {
             case ACK_RCVD:
             case ACK_SENT:
@@ -240,7 +254,7 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.STOPPED);
                 break;
             case OPENED:
-                listener.onSendConfigureRequest();
+                listener.sendConfigureRequest();
                 // Fall through
             case REQ_SENT:
             case ACK_RCVD:
@@ -255,7 +269,7 @@ public class LcpStateMachine implements EventProcessor {
     public void onUnknownCode(byte code, byte identifier, Buffer buffer) {
         logger.warn("Received unknown code: {} {} {}", code, identifier, buffer);
         checkNotDown();
-        listener.onSendCodeReject();
+        listener.sendCodeReject();
     }
 
     @Override
@@ -296,7 +310,7 @@ public class LcpStateMachine implements EventProcessor {
                 break;
             case OPENED:
                 restartCounter.onInitializeRestartCount();
-                listener.onSendTerminateRequest();
+                listener.sendTerminateRequest();
                 setState(State.STOPPING);
                 break;
             case STOPPED:
@@ -314,7 +328,7 @@ public class LcpStateMachine implements EventProcessor {
         logger.info("EchoRequest {} {}", identifier, buffer);
         checkNotDown();
         if (state == State.OPENED) {
-            listener.onSendEchoReply();
+            listener.sendEchoReply();
         }
     }
 
@@ -363,7 +377,7 @@ public class LcpStateMachine implements EventProcessor {
     // Initial move into Open and Up.
     private void initialRequest() {
         restartCounter.onInitializeRestartCount();
-        listener.onSendConfigureRequest();
+        listener.sendConfigureRequest();
         setState(State.REQ_SENT);
     }
 

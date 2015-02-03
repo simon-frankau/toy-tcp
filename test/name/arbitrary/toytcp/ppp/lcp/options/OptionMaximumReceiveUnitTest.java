@@ -6,9 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionMaximumReceiveUnitTest {
+    private final Option option = new OptionMaximumReceiveUnit(0x0102);
+
     @Test
     public void testCreateSuccess() {
-        assertEquals(new OptionMaximumReceiveUnit(0x0102),
+        assertEquals(option,
                 OptionsReader.readOption(OptionsReader.MAXIMUM_RECEIVE_UNIT,
                         new Buffer(0x01, 0x02)));
     }
@@ -29,12 +31,16 @@ public class OptionMaximumReceiveUnitTest {
 
     @Test
     public void testRequestIsAccepted() {
-        assertEquals(Option.ResponseType.ACCEPT,
-                new OptionMaximumReceiveUnit(0x0102).getResponseType());
+        assertEquals(Option.ResponseType.ACCEPT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        new OptionMaximumReceiveUnit(0x0102).getAcceptableVersion();
+        option.getAcceptableVersion();
+    }
+
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
     }
 }

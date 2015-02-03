@@ -6,9 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionAddressAndControlFieldCompressionTest {
+    private final OptionAddressAndControlFieldCompression option = OptionAddressAndControlFieldCompression.INSTANCE;
+
     @Test
     public void testCreateSuccess() {
-        assertEquals(OptionAddressAndControlFieldCompression.INSTANCE,
+        assertEquals(option,
                 OptionsReader.readOption(OptionsReader.ADDRESS_AND_CONTROL_COMPRESSION_FIELD,
                         new Buffer()));
     }
@@ -22,12 +24,16 @@ public class OptionAddressAndControlFieldCompressionTest {
 
     @Test
     public void testRequestIsAccepted() {
-        assertEquals(Option.ResponseType.ACCEPT,
-                OptionAddressAndControlFieldCompression.INSTANCE.getResponseType());
+        assertEquals(Option.ResponseType.ACCEPT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        OptionAddressAndControlFieldCompression.INSTANCE.getAcceptableVersion();
+        option.getAcceptableVersion();
+    }
+
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
     }
 }

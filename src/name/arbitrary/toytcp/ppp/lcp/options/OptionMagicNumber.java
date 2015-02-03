@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
+import name.arbitrary.toytcp.WriteBuffer;
+
 /**
  * Magic-Number option.
  */
@@ -19,6 +21,12 @@ public final class OptionMagicNumber implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(OptionsReader.MAGIC_NUMBER, (byte)6);
+        buffer.appendU32(magicNumber);
     }
 
     @Override

@@ -6,9 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionProtocolFieldCompressionTest {
+    private final Option option = OptionProtocolFieldCompression.INSTANCE;
+
     @Test
     public void testCreateSuccess() {
-        assertEquals(OptionProtocolFieldCompression.INSTANCE,
+        assertEquals(option,
                 OptionsReader.readOption(OptionsReader.PROTOCOL_FIELD_COMPRESSION,
                         new Buffer()));
     }
@@ -22,13 +24,16 @@ public class OptionProtocolFieldCompressionTest {
 
     @Test
     public void testRequestIsAccepted() {
-        assertEquals(Option.ResponseType.ACCEPT,
-                OptionProtocolFieldCompression.INSTANCE.getResponseType());
+        assertEquals(Option.ResponseType.ACCEPT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        OptionProtocolFieldCompression.INSTANCE.getAcceptableVersion();
+        option.getAcceptableVersion();
     }
 
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
+    }
 }

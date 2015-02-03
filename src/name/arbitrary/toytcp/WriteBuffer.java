@@ -4,19 +4,67 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO: Not entirely sure what this should look like.
+ * TODO: Should become an extension to Buffer that supports:
+ * * scribbling on the contents
+ * * keeping an append pointer
+ * * opening up header/trailer areas.
  */
 public class WriteBuffer {
-    private final List<Byte> buffer = new ArrayList<Byte>();
+    private final ArrayList<Byte> buffer = new ArrayList<Byte>();
 
-    public void write(Byte b) {
+    public void append(Byte b) {
         buffer.add(b);
     }
 
-    public void write(Byte... bs) {
+    public void append(Byte... bs) {
         for (Byte b : bs) {
             buffer.add(b);
         }
+    }
+
+    public void append(Buffer data) {
+        int n = data.length();
+        for (int i = 0; i < n; i++) {
+            append(data.get(i));
+        }
+    }
+
+    public void appendU16(int value) {
+        buffer.add((byte)(value >> 8));
+        buffer.add((byte)(value & 0xFF));
+    }
+
+    public void appendU32(int value) {
+        buffer.add((byte)(value >> 24));
+        buffer.add((byte)(value >> 16));
+        buffer.add((byte)(value >> 8));
+        buffer.add((byte)(value & 0xFF));
+    }
+
+    public int getAppendOffset() {
+        return buffer.size();
+    }
+
+    public void put(int i, byte value) {
+        buffer.set(i, value);
+    }
+
+    public void putU8(int i, int value) {
+        put(i, (byte)value);
+    }
+
+    public void putU16(int i, int value) {
+        put(i, (byte)(value >> 8));
+        put(i, (byte)(value & 0xFF));
+    }
+
+    public byte[] toByteArray() {
+        int n = buffer.size();
+        byte[] array = new byte[n];
+        for (int i = 0; i < n; i++) {
+            array[i] = buffer.get(i);
+        }
+        return array;
     }
 
     @Override

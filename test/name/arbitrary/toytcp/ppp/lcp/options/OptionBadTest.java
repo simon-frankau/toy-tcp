@@ -6,21 +6,27 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionBadTest {
-    // Creation of OptionBad with a known type but incorrectly-formatted message tested with that type.
+    // Creation of OptionBad with a known type but incorrectly-formatted message is tested with that type.
+
+    private final Option option = new OptionBad((byte)0xA0, new Buffer((byte)0x01));
 
     @Test
     public void testCreateOnUnknownType() {
-        assertEquals(new OptionBad((byte)0xA0, new Buffer()), OptionsReader.readOption((byte)0xA0, new Buffer()));
+        assertEquals(option, OptionsReader.readOption((byte)0xA0, new Buffer((byte)(0x01))));
     }
 
     @Test
     public void testRequestIsRejected() {
-        assertEquals(Option.ResponseType.REJECT,
-                new OptionBad((byte)0xA0, new Buffer()).getResponseType());
+        assertEquals(Option.ResponseType.REJECT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        new OptionBad((byte)0xA0, new Buffer()).getAcceptableVersion();
+        option.getAcceptableVersion();
+    }
+
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
     }
 }

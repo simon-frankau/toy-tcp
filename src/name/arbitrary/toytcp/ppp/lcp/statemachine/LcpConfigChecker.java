@@ -15,10 +15,10 @@ public interface LcpConfigChecker {
 
     // Interface to do with receiving requests and producing responses:
 
-    boolean isConfigAcceptable(List<Option> options);
+    Option.ResponseType processIncomingConfigRequest(List<Option> options);
 
-    // Get an appropriate response if the config is not acceptable.
-    name.arbitrary.toytcp.WriteBuffer getConfigNakOrReject(byte identifier);
+    List<Option> getConfigNakOptions();
+    List<Option> getConfigRejectOptions();
 
     // Interface to do with sending requests and handling responses.
 

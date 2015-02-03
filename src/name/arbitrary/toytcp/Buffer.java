@@ -43,8 +43,19 @@ public final class Buffer {
         return getU8(i) << 24 | getU8(i + 1) << 16 | getU8(i + 2) << 8 | getU8(i + 3);
     }
 
+    // TODO: Should 'put' be on a standard buffer?
+
     public void put(int i, byte value) {
         data[start + i] = value;
+    }
+
+    public void putU8(int i, int value) {
+        put(i, (byte)value);
+    }
+
+    public void putU16(int i, int value) {
+        put(i, (byte)(value & 0xFF));
+        put(i, (byte)(value >> 8));
     }
 
     public int length() {

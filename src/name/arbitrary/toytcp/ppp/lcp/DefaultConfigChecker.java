@@ -21,7 +21,7 @@ public class DefaultConfigChecker implements LcpConfigChecker {
     private List<Option> rejectReceivedOptions = new ArrayList<Option>();
 
     @Override
-    public boolean isConfigAcceptable(List<Option> options) {
+    public Option.ResponseType processIncomingConfigRequest(List<Option> options) {
         acceptableReceivedOptions.clear();
         nakReceivedOptions.clear();
         rejectReceivedOptions.clear();
@@ -39,20 +39,27 @@ public class DefaultConfigChecker implements LcpConfigChecker {
                     break;
             }
         }
-        return nakReceivedOptions.isEmpty() && rejectReceivedOptions.isEmpty();
+
+        if (!rejectReceivedOptions.isEmpty()) {
+            return Option.ResponseType.REJECT;
+        }
+        if (!nakReceivedOptions.isEmpty()) {
+            return Option.ResponseType.NAK;
+        }
+        return Option.ResponseType.ACCEPT;
     }
 
     @Override
-    public WriteBuffer getConfigNakOrReject(byte identifier) {
-        // TODO: Doesn't really build responses yet!
-        if (!rejectReceivedOptions.isEmpty()) {
-            logger.info("Would send reject {}", rejectReceivedOptions);
-            return new WriteBuffer();
-        } else if (!nakReceivedOptions.isEmpty()) {
-            logger.info("Would send nak {}", nakReceivedOptions);
-            return new WriteBuffer();
-        }
-        throw new IllegalStateException("Asking for nak/reject response when should ack");
+    public List<Option> getConfigRejectOptions() {
+        assert !rejectReceivedOptions.isEmpty();
+        return rejectReceivedOptions;
+    }
+
+    @Override
+    public List<Option> getConfigNakOptions() {
+        assert rejectReceivedOptions.isEmpty();
+        assert !nakReceivedOptions.isEmpty();
+        return nakReceivedOptions;
     }
 
     @Override

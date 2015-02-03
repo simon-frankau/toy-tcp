@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
+import name.arbitrary.toytcp.WriteBuffer;
+
 /**
  * Async-Control-Character-Map option.
  */
@@ -19,6 +21,12 @@ public final class OptionAsyncControlCharacterMap implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always accept");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(OptionsReader.ASYNC_CONTROL_CHARACTER_MAP, (byte)6);
+        buffer.appendU32(asyncMap);
     }
 
     @Override

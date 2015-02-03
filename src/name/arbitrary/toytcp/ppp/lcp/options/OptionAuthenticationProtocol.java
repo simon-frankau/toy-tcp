@@ -1,6 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.WriteBuffer;
 
 /**
  * Authentication-Protocol option.
@@ -24,6 +25,13 @@ public final class OptionAuthenticationProtocol implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(OptionsReader.AUTHENTICATION_PROTOCOL, (byte)(data.length() + 4));
+        buffer.appendU16(authenticationProtocol);
+        buffer.append(data);
     }
 
     @Override

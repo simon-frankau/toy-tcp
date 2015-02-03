@@ -1,7 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
-import name.arbitrary.toytcp.WriteBuffer;
+import name.arbitrary.toytcp.ppp.lcp.options.Option;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -138,7 +138,8 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
-                when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(true);
+                when(configChecker.processIncomingConfigRequest(any(List.class)))
+                        .thenReturn(Option.ResponseType.ACCEPT);
                 stateMachine.onConfigureRequest((byte) 0, null);
             }
         };
@@ -158,9 +159,9 @@ public class LcpStateMachineTest {
         transition = new Runnable() {
             @Override
             public void run() {
+                when(configChecker.processIncomingConfigRequest(any(List.class)))
+                        .thenReturn(Option.ResponseType.NAK);
                 stateMachine.onConfigureRequest((byte)0, null);
-                when(configChecker.isConfigAcceptable(any(List.class))).thenReturn(false);
-
             }
         };
 
@@ -406,13 +407,13 @@ public class LcpStateMachineTest {
                     verify(restartCounter).onInitializeRestartCount();
                     break;
                 case SCR:
-                    verify(stateActionListener).onSendConfigureRequest();
+                    verify(stateActionListener).sendConfigureRequest();
                     break;
                 case TLD:
                     verify(upperListener).onThisLayerDown();
                     break;
                 case SER:
-                    verify(stateActionListener).onSendEchoReply();
+                    verify(stateActionListener).sendEchoReply();
                     break;
                 case TLF:
                     verify(stateActionListener).onThisLayerFinished();
@@ -424,19 +425,19 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).onThisLayerStarted();
                     break;
                 case STA:
-                    verify(stateActionListener).onSendTerminateAcknowledge();
+                    verify(stateActionListener).sendTerminateAcknowledge();
                     break;
                 case STR:
-                    verify(stateActionListener).onSendTerminateRequest();
+                    verify(stateActionListener).sendTerminateRequest();
                     break;
                 case SCA:
-                    verify(stateActionListener).onSendConfigureAcknowledge(anyByte(), any(List.class));
+                    verify(stateActionListener).sendConfigureAcknowledge(anyByte(), any(List.class));
                     break;
                 case SCN:
-                    verify(stateActionListener).onSendConfigureNak(any(WriteBuffer.class));
+                    verify(stateActionListener).sendConfigureNak(anyByte(), any(List.class));
                     break;
                 case SCJ:
-                    verify(stateActionListener).onSendCodeReject();
+                    verify(stateActionListener).sendCodeReject();
                     break;
                 case ZRC:
                     verify(restartCounter).onZeroRestartCount();

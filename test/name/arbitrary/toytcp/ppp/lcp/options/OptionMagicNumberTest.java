@@ -6,9 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionMagicNumberTest {
+    private final Option option = new OptionMagicNumber(0x01020304);
+
     @Test
     public void testCreateSuccess() {
-        assertEquals(new OptionMagicNumber(0x01020304),
+        assertEquals(option,
                 OptionsReader.readOption(OptionsReader.MAGIC_NUMBER,
                         new Buffer(0x01, 0x02, 0x03, 0x04)));
     }
@@ -29,12 +31,16 @@ public class OptionMagicNumberTest {
 
     @Test
     public void testRequestIsRejected() {
-        assertEquals(Option.ResponseType.REJECT,
-                new OptionMagicNumber(0x01020304).getResponseType());
+        assertEquals(Option.ResponseType.REJECT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        new OptionMagicNumber(0x01020304).getAcceptableVersion();
+        option.getAcceptableVersion();
+    }
+
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
     }
 }

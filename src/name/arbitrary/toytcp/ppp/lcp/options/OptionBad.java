@@ -1,6 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.WriteBuffer;
 
 /**
  * Unrecognised or badly-formatted option.
@@ -22,6 +23,12 @@ public final class OptionBad implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(type, (byte)(this.buffer.length() + 2));
+        buffer.append(this.buffer);
     }
 
     @Override

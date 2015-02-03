@@ -6,9 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class OptionAsyncControlCharacterMapTest {
+    private final OptionAsyncControlCharacterMap option = new OptionAsyncControlCharacterMap(0x01020304);
+
     @Test
     public void testCreateSuccess() {
-        assertEquals(new OptionAsyncControlCharacterMap(0x01020304),
+        assertEquals(option,
                 OptionsReader.readOption(OptionsReader.ASYNC_CONTROL_CHARACTER_MAP,
                         new Buffer(0x01, 0x02, 0x03, 0x04)));
     }
@@ -29,12 +31,16 @@ public class OptionAsyncControlCharacterMapTest {
 
     @Test
     public void testRequestIsAccepted() {
-        assertEquals(Option.ResponseType.ACCEPT,
-                new OptionAsyncControlCharacterMap(0x01020304).getResponseType());
+        assertEquals(Option.ResponseType.ACCEPT, option.getResponseType());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testNoAcceptableAlternativeRequired() {
-        new OptionAsyncControlCharacterMap(0x01020304).getAcceptableVersion();
+        option.getAcceptableVersion();
+    }
+
+    @Test
+    public void testWriting() {
+        OptionsTestUtilities.testOptionWriting(option);
     }
 }

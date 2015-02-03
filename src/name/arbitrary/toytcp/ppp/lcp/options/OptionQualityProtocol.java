@@ -1,6 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.WriteBuffer;
 
 /**
  * Quality-Protocol option.
@@ -23,6 +24,13 @@ public class OptionQualityProtocol implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always reject");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(OptionsReader.QUALITY_PROTOCOL, (byte)(data.length() + 4));
+        buffer.appendU16(qualityProtocol);
+        buffer.append(data);
     }
 
     @Override

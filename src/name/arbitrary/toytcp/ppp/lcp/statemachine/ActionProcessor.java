@@ -1,6 +1,5 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
-import name.arbitrary.toytcp.WriteBuffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 
 import java.util.List;
@@ -9,21 +8,18 @@ import java.util.List;
  * Interface for the messages to send out and link layer actions associated with state machine actions.
  */
 public interface ActionProcessor {
-    void onSendConfigureRequest();
-
-    void onSendCodeReject();
-
-    void onSendEchoReply();
-
+    void onThisLayerStarted();
     void onThisLayerFinished();
 
-    void onThisLayerStarted();
+    void sendConfigureRequest();
+    void sendConfigureAcknowledge(byte identifier, List<Option> options);
+    void sendConfigureNak(byte identifier, List<Option> options);
+    void sendConfigureReject(byte identifier, List<Option> options);
 
-    void onSendTerminateAcknowledge();
+    void sendTerminateRequest();
+    void sendTerminateAcknowledge();
 
-    void onSendTerminateRequest();
+    void sendCodeReject();
 
-    void onSendConfigureAcknowledge(byte identifier, List<Option> options);
-
-    void onSendConfigureNak(WriteBuffer configNakOrReject);
+    void sendEchoReply();
 }

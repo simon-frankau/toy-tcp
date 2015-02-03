@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.options;
 
+import name.arbitrary.toytcp.WriteBuffer;
+
 /**
  * Maximum-Receive-Unit option.
  */
@@ -20,6 +22,12 @@ public final class OptionMaximumReceiveUnit implements Option {
     @Override
     public Option getAcceptableVersion() {
         throw new IllegalStateException("No need for acceptable version - always accept");
+    }
+
+    @Override
+    public void writeTo(WriteBuffer buffer) {
+        buffer.append(OptionsReader.MAXIMUM_RECEIVE_UNIT, (byte)4);
+        buffer.appendU16(maximumReceiveUnit);
     }
 
     @Override

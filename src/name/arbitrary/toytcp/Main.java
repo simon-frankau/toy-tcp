@@ -2,14 +2,13 @@ package name.arbitrary.toytcp;
 
 import name.arbitrary.toytcp.ppp.lcp.DefaultConfigChecker;
 import name.arbitrary.toytcp.ppp.lcp.FrameReader;
-import name.arbitrary.toytcp.ppp.lcp.options.Option;
+import name.arbitrary.toytcp.ppp.lcp.FrameWriter;
 import name.arbitrary.toytcp.ppp.lcp.statemachine.*;
 import name.arbitrary.toytcp.ppp.link.PppLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -48,52 +47,7 @@ public class Main {
                 logger.info("LCP is DOWN");
             }
         };
-        ActionProcessor actionProcessor = new ActionProcessor() {
-            @Override
-            public void onSendConfigureRequest() {
-                logger.info("SCR");
-            }
-
-            @Override
-            public void onSendCodeReject() {
-                logger.info("SCJ");
-            }
-
-            @Override
-            public void onSendEchoReply() {
-                logger.info("SER");
-            }
-
-            @Override
-            public void onThisLayerFinished() {
-                logger.info("TLF");
-            }
-
-            @Override
-            public void onThisLayerStarted() {
-                logger.info("TLS");
-            }
-
-            @Override
-            public void onSendTerminateAcknowledge() {
-                logger.info("STA");
-            }
-
-            @Override
-            public void onSendTerminateRequest() {
-                logger.info("STR");
-            }
-
-            @Override
-            public void onSendConfigureAcknowledge(byte identifier, List<Option> options) {
-                logger.info("SCA");
-            }
-
-            @Override
-            public void onSendConfigureNak(WriteBuffer configNakOrReject) {
-                logger.info("SCN");
-            }
-        };
+        ActionProcessor actionProcessor = new FrameWriter();
         LcpRestartCounter restartCounter = new LcpRestartCounter() {
             @Override
             public void onInitializeRestartCount() {
