@@ -55,7 +55,7 @@ public class WriteBuffer {
 
     public void putU16(int i, int value) {
         put(i, (byte)(value >> 8));
-        put(i, (byte)(value & 0xFF));
+        put(i + 1, (byte)(value & 0xFF));
     }
 
     public byte[] toByteArray() {
@@ -72,5 +72,9 @@ public class WriteBuffer {
         return "WriteBuffer{" +
                 "buffer=" + buffer +
                 '}';
+    }
+
+    public interface Listener {
+        void send(WriteBuffer buffer);
     }
 }

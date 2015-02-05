@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * Constructs and sends the messages from the state machine.
+ *
+ * TODO: Needs tests?
  */
 public class FrameWriter implements ActionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(FrameWriter.class);

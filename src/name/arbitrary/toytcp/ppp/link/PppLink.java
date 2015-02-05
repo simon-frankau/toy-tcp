@@ -1,5 +1,7 @@
 package name.arbitrary.toytcp.ppp.link;
 
+import name.arbitrary.toytcp.WriteBuffer;
+
 import java.io.InputStream;
 
 /**
@@ -7,19 +9,23 @@ import java.io.InputStream;
  */
 public class PppLink {
     private final PppLinkReaderThread readerThread;
+    private final PppLinkWriterThread writerThread;
     private final Demultiplexer demultiplexer;
 
     public PppLink(InputStream inputStream) {
         demultiplexer = new Demultiplexer();
         readerThread = new PppLinkReaderThread(inputStream, demultiplexer);
+        writerThread = new PppLinkWriterThread();
     }
 
     public void start() {
         readerThread.start();
+        writerThread.start();
     }
 
     public void stop() {
         readerThread.stop();
+        writerThread.stop();
     }
 
     public void subscribe(int protocol, PppLinkListener listener) {
@@ -28,5 +34,9 @@ public class PppLink {
 
     public void unsubscribe(int protocol) {
         demultiplexer.unsubscribe(protocol);
+    }
+
+    public void send(WriteBuffer buffer) {
+        writerThread.send(buffer);
     }
 }

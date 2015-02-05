@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Adapts the LCP packets into specific requests that get fed to an EventProcessor.
+ *
+ * TODO: Needs tests?
  */
 public class FrameReader implements PppLinkListener {
     private static final Logger logger = LoggerFactory.getLogger(FrameReader.class);
