@@ -13,7 +13,7 @@ class FcsChecker implements Buffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(FcsChecker.class);
 
     // FCS lookup table as calculated by the table generator.
-    private static final int[] fcstab = {
+    private static final int[] fcsTable = {
         0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
         0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
         0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e,
@@ -58,27 +58,19 @@ class FcsChecker implements Buffer.Listener {
     }
 
     // Calculate a new fcs given the current fcs and the new data.
-    private static int pppfcs16(int fcs, Buffer buffer)
+    public static int pppFcs16(Buffer buffer)
     {
+        int fcs = PPP_INIT_FCS16;
         for (int i = 0; i < buffer.length(); i++) {
-            fcs = (fcs >>> 8) ^ fcstab[(fcs ^ buffer.get(i)) & 0xff];
+            fcs = (fcs >>> 8) ^ fcsTable[(fcs ^ buffer.get(i)) & 0xff];
         }
         return fcs;
     }
 
     private static boolean checkPppFcs(Buffer buffer)
     {
-        /* TODO: Use in constructing packets!
-        // add on output
-        trialfcs = pppfcs16( PPP_INIT_FCS16, cp, len );
-        trialfcs ^= 0xffff;                 // complement
-        cp[len] = (trialfcs & 0x00ff);      // least significant byte first
-        cp[len+1] = ((trialfcs >> 8) & 0x00ff);
-        */
-        // check on input
-        return pppfcs16(PPP_INIT_FCS16, buffer) == PPP_GOOD_FCS16;
+        return pppFcs16(buffer) == PPP_GOOD_FCS16;
     }
-
 
     @Override
     public void receive(Buffer buffer) {

@@ -29,4 +29,6 @@ public class HeaderBuilderTest {
                 1, 2, 3, 4, 5));
         verifyNoMoreInteractions(listener);
     }
+
+    // TODO: A round-trip test might be good.
 }
