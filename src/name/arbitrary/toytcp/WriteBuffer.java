@@ -12,6 +12,15 @@ import java.util.List;
 public class WriteBuffer {
     private final ArrayList<Byte> buffer = new ArrayList<Byte>();
 
+    public WriteBuffer() {
+    }
+
+    public WriteBuffer(int... data) {
+        for (int i = 0 ; i < data.length; i++) {
+            append((byte)data[i]);
+        }
+    }
+
     public void append(Byte b) {
         buffer.add(b);
     }
@@ -72,6 +81,23 @@ public class WriteBuffer {
         return "WriteBuffer{" +
                 "buffer=" + buffer +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WriteBuffer that = (WriteBuffer) o;
+
+        if (!buffer.equals(that.buffer)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return buffer.hashCode();
     }
 
     public interface Listener {

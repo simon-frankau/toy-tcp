@@ -18,8 +18,15 @@ public class HeaderBuilder implements WriteBuffer.Listener {
 
     @Override
     public void send(WriteBuffer buffer) {
-        logger.info("{}", buffer);
-        // TODO
-        listener.send(buffer);
+        // TODO: Use pre-prepared header space.
+        WriteBuffer newBuffer = new WriteBuffer();
+        newBuffer.append(HeaderCompressor.ADDRESS);
+        newBuffer.append(HeaderCompressor.CONTROL);
+        byte[] contents = buffer.toByteArray();
+        for (int i = 0; i < contents.length; i++) {
+            newBuffer.append(contents[i]);
+        }
+        logger.info("{}", newBuffer);
+        listener.send(newBuffer);
     }
 }

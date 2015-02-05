@@ -17,25 +17,7 @@ public class Main {
         logger.info("ToyTCP has started");
 
         PppLink link = new PppLink(System.in);
-        /*
-        link.subscribe(0xC021, new PppLinkListener() {
-            @Override
-            public void onFrame(Buffer buffer) {
-                logger.info("Received frame: {}", buffer);
-            }
 
-            @Override
-            public void onLinkUp() {
-                logger.info("Link UP");
-            }
-
-            @Override
-            public void onLinkDown() {
-                logger.info("Link DOWN");
-            }
-        });
-        */
-        // TODO: State machine has changed and needs some new toys before it'll integrate correctly...
         LcpUpperLayerListener listener = new LcpUpperLayerListener() {
             @Override
             public void onThisLayerUp() {
@@ -47,7 +29,8 @@ public class Main {
                 logger.info("LCP is DOWN");
             }
         };
-        ActionProcessor actionProcessor = new FrameWriter();
+
+        ActionProcessor actionProcessor = new FrameWriter(link);
         LcpRestartCounter restartCounter = new LcpRestartCounter() {
             @Override
             public void onInitializeRestartCount() {

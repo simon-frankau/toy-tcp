@@ -16,6 +16,12 @@ import java.util.List;
 public class FrameWriter implements ActionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(FrameWriter.class);
 
+    private final WriteBuffer.Listener listener;
+
+    public FrameWriter(WriteBuffer.Listener listener) {
+        this.listener = listener;
+    }
+
     @Override
     public void sendConfigureRequest() {
         logger.info("SCR");
@@ -80,5 +86,6 @@ public class FrameWriter implements ActionProcessor {
         buffer.putU16(lengthFieldOffset, buffer.getAppendOffset());
 
         logger.info("{}", buffer);
+        listener.send(buffer);
     }
 }
