@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         logger.info("ToyTCP has started");
 
-        PppLink link = new PppLink(System.in);
+        PppLink link = new PppLink(System.in, System.out);
 
         LcpUpperLayerListener listener = new LcpUpperLayerListener() {
             @Override
