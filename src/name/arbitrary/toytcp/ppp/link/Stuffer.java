@@ -18,8 +18,20 @@ public class Stuffer implements WriteBuffer.Listener {
 
     @Override
     public void send(WriteBuffer buffer) {
-        logger.info("{}", buffer);
-        // TODO
-        listener.send(buffer);
+        // TODO: Conservatively, we'll stuff escape, mask and everything <= 0x20
+        byte[] data = buffer.toByteArray();
+        WriteBuffer newBuffer = new WriteBuffer();
+        for (byte b : data) {
+            if (b == Unstuffer.ESCAPE_CHAR || b == Unframer.FLAG_CHAR ||
+                    (0 <= b && b < 0x20)) {
+                newBuffer.append(Unstuffer.ESCAPE_CHAR);
+                newBuffer.append((byte)(b ^ Unstuffer.ESCAPE_MASK));
+            } else {
+                newBuffer.append(b);
+            }
+        }
+
+        logger.info("{}", newBuffer);
+        listener.send(newBuffer);
     }
 }

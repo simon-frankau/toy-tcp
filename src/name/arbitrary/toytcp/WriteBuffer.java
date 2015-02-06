@@ -21,12 +21,12 @@ public class WriteBuffer {
         }
     }
 
-    public void append(Byte b) {
+    public void append(byte b) {
         buffer.add(b);
     }
 
-    public void append(Byte... bs) {
-        for (Byte b : bs) {
+    public void append(byte... bs) {
+        for (byte b : bs) {
             buffer.add(b);
         }
     }

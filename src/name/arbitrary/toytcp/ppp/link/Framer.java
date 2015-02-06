@@ -18,8 +18,12 @@ public class Framer implements WriteBuffer.Listener {
 
     @Override
     public void send(WriteBuffer buffer) {
-        logger.info("{}", buffer);
-        // TODO
-        listener.send(buffer);
+        WriteBuffer newBuffer = new WriteBuffer();
+        newBuffer.append(Unframer.FLAG_CHAR);
+        newBuffer.append(buffer.toByteArray());
+        newBuffer.append(Unframer.FLAG_CHAR);
+
+        logger.info("{}", newBuffer);
+        listener.send(newBuffer);
     }
 }
