@@ -11,7 +11,7 @@ import java.io.OutputStream;
 /**
  * Handles the sending of frames.
  */
-class PppLinkWriterThread {
+class PppLinkWriterThread implements WriteBuffer.Listener {
     private static final Logger logger = LoggerFactory.getLogger(PppLinkWriterThread.class);
 
     private final WriteBuffer.Listener sender;

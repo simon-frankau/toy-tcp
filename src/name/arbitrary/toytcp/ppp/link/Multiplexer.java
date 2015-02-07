@@ -5,23 +5,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Adds an address/control header.
+ * Tacks the protocol on the front of a buffer.
  */
-public class HeaderBuilder implements WriteBuffer.Listener {
-    private final static Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
+public class Multiplexer implements WriteBuffer.Listener {
+    private static final Logger logger = LoggerFactory.getLogger(Multiplexer.class);
 
+    private final int protocol;
     private final WriteBuffer.Listener listener;
 
-    public HeaderBuilder(WriteBuffer.Listener listener) {
+    public Multiplexer(int protocol, WriteBuffer.Listener listener) {
+        this.protocol = protocol;
         this.listener = listener;
     }
 
     @Override
     public void send(WriteBuffer buffer) {
-        // TODO: Use pre-prepared header space.
         WriteBuffer newBuffer = new WriteBuffer();
-        newBuffer.append(HeaderCompressor.ADDRESS);
-        newBuffer.append(HeaderCompressor.CONTROL);
+        newBuffer.appendU16(protocol);
         newBuffer.append(buffer.toByteArray());
         logger.info("{}", newBuffer);
         listener.send(newBuffer);

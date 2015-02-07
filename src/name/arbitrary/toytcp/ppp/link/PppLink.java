@@ -8,7 +8,7 @@ import java.io.OutputStream;
 /**
  * Represents the PPP link layer. Mostly delegates.
  */
-public class PppLink implements WriteBuffer.Listener {
+public class PppLink {
     private final PppLinkReaderThread readerThread;
     private final PppLinkWriterThread writerThread;
     private final Demultiplexer demultiplexer;
@@ -37,7 +37,7 @@ public class PppLink implements WriteBuffer.Listener {
         demultiplexer.unsubscribe(protocol);
     }
 
-    public void send(WriteBuffer buffer) {
-        writerThread.send(buffer);
+    public WriteBuffer.Listener getProtocolSender(int protocol) {
+        return new Multiplexer(protocol, writerThread);
     }
 }

@@ -30,7 +30,7 @@ public class Main {
             }
         };
 
-        ActionProcessor actionProcessor = new FrameWriter(link);
+        ActionProcessor actionProcessor = new FrameWriter(link.getProtocolSender(0xC021));
         LcpRestartCounter restartCounter = new LcpRestartCounter() {
             @Override
             public void onInitializeRestartCount() {
