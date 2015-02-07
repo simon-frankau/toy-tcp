@@ -2,7 +2,14 @@ ToyTCP
 ======
 
 This is a toy TCP/IP stack implementation, in order to practice my
-understanding of TCP/IP as I work through TCP/IP Illustrated.
+understanding of TCP/IP as I work through TCP/IP Illustrated. It hooks
+into the rest of the system through PPP.
+
+Yes, I could have gone for TUN/TAP, but I'd learn less, and might end
+up somewhat more system-specific.
+
+It's not even alpha yet. It doesn't even establish an IP-level link
+right now.
 
 To use
 ------
@@ -10,6 +17,8 @@ To use
 Build, and run "go.sh". This all assumes you're building with Idea,
 and working on a platform that behaves like MacOS X. I've not tested
 any cross-anything compatibility, I'm afraid.
+
+TODO: There are some nasty hardwired paths in there for now.
 
 Architecture
 ------------
@@ -20,6 +29,9 @@ stack in Java. I'm mostly looking for simplicity, and ease of testing
 things being passed along, the general model for each component is for
 something that takes in events and sends out events. Lots of callback
 interfaces.
+
+It's all a bit "How a network stack might be written in Enterprise
+Java Style".
 
 ### Threading
 
@@ -38,6 +50,30 @@ stack.
 
 (TODO: Install a lock, once we actually have more event sources than
 reading from the connection!)
+
+### IPv6
+
+I was originally hoping to support this as I went along, to understand
+this all the better. Having read some of TCP/IP Illustrated, I'm
+seeing serious Second System Effect, and the complexity is boggling me
+slightly. So, I'll probably come back to this.
+
+### TODO
+
+There are plenty of loose ends with the code. It's got to the point
+where it can just scrape an LCP Up, but there are many things that
+should be corrected:
+
+* Build with Maven (remove classpath hacks)
+* Get sensible and consistent logging behaviour
+* Get the state machine to handle identifiers appropriately
+* Have the config checker deal with acks/rejects/re-initialising
+* Generally polish up state machine
+* Implement time-outs! This will finally require setting up timers...
+* WriteBuffer should derive from Buffer, Buffer should be read-only
+* WriteBuffer should efficiently (zero copy) expand its header
+* Re-read the RFC and go through the implementation with a
+  fine-toothed comb
 
 Problems
 --------
