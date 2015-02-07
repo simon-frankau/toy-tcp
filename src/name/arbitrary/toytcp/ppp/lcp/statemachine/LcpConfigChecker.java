@@ -22,7 +22,7 @@ public interface LcpConfigChecker {
 
     // Interface to do with sending requests and handling responses.
 
-    // TODO
+    List<Option> getRequestedOptions();
 
     // Interface to do with handling rejects.
 

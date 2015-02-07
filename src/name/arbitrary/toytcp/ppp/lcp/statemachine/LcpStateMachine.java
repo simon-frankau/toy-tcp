@@ -380,7 +380,7 @@ public class LcpStateMachine implements EventProcessor {
     // Initial move into Open and Up.
     private void initialRequest() {
         restartCounter.onInitializeRestartCount();
-        listener.sendConfigureRequest(TODO_ID, null); // TODO
+        listener.sendConfigureRequest(TODO_ID, configChecker.getRequestedOptions());
         setState(State.REQ_SENT);
     }
 

@@ -1,13 +1,13 @@
 package name.arbitrary.toytcp.ppp.lcp;
 
 import name.arbitrary.toytcp.Buffer;
-import name.arbitrary.toytcp.WriteBuffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 import name.arbitrary.toytcp.ppp.lcp.statemachine.LcpConfigChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,6 +53,12 @@ public class DefaultConfigChecker implements LcpConfigChecker {
     public List<Option> getConfigRejectOptions() {
         assert !rejectReceivedOptions.isEmpty();
         return rejectReceivedOptions;
+    }
+
+    @Override
+    public List<Option> getRequestedOptions() {
+        // We aren't going to request /anything/. Keep it simple!
+        return Collections.EMPTY_LIST;
     }
 
     @Override
