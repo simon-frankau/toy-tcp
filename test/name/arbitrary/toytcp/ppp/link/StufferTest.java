@@ -43,6 +43,22 @@ public class StufferTest {
         testStuffing((byte)0x1F);
     }
 
+    @Test
+    public void testSetACCM() {
+        int testACCM = 0x0002;
+        stuffer.setAsyncControlCharacterMap(testACCM);
+        assertEquals(testACCM, stuffer.getAsyncControlCharacterMap());
+
+        stuffer.send(new WriteBuffer(0x00, 0x01, 0x02));
+        verify(listener).send(new WriteBuffer(0x00, Unstuffer.ESCAPE_CHAR, Unstuffer.ESCAPE_MASK ^ 0x01, 0x02));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void testDefaultACCM() {
+        assertEquals(0xFFFFFFFF, stuffer.getAsyncControlCharacterMap());
+    }
+
     private void testStuffing(byte b) {
         stuffer.send(new WriteBuffer(0x20, b, 0xF0));
         verify(listener).send(new WriteBuffer(0x20, Unstuffer.ESCAPE_CHAR, Unstuffer.ESCAPE_MASK ^ b, 0xF0));

@@ -12,18 +12,18 @@ public class Stuffer implements WriteBuffer.Listener {
 
     private final WriteBuffer.Listener listener;
 
+    private int asyncControlCharacterMap = 0xFFFFFFFF;
+
     public Stuffer(WriteBuffer.Listener listener) {
         this.listener = listener;
     }
 
     @Override
     public void send(WriteBuffer buffer) {
-        // TODO: Conservatively, we'll stuff escape, mask and everything <= 0x20
         byte[] data = buffer.toByteArray();
         WriteBuffer newBuffer = new WriteBuffer();
         for (byte b : data) {
-            if (b == Unstuffer.ESCAPE_CHAR || b == Unframer.FLAG_CHAR ||
-                    (0 <= b && b < 0x20)) {
+            if (b == Unstuffer.ESCAPE_CHAR || b == Unframer.FLAG_CHAR || isAsyncControl(b)) {
                 newBuffer.append(Unstuffer.ESCAPE_CHAR);
                 newBuffer.append((byte)(b ^ Unstuffer.ESCAPE_MASK));
             } else {
@@ -33,5 +33,17 @@ public class Stuffer implements WriteBuffer.Listener {
 
         logger.info("{}", newBuffer);
         listener.send(newBuffer);
+    }
+
+    public void setAsyncControlCharacterMap(int asyncControlCharacterMap) {
+        this.asyncControlCharacterMap = asyncControlCharacterMap;
+    }
+
+    public int getAsyncControlCharacterMap() {
+        return asyncControlCharacterMap;
+    }
+
+    private boolean isAsyncControl(byte b) {
+        return 0 <= b && b < 0x20 && (1 << b & asyncControlCharacterMap) != 0;
     }
 }
