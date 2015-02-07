@@ -1,5 +1,6 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
+import name.arbitrary.toytcp.WriteBuffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 
 import java.util.List;
@@ -11,15 +12,15 @@ public interface ActionProcessor {
     void onThisLayerStarted();
     void onThisLayerFinished();
 
-    void sendConfigureRequest();
+    void sendConfigureRequest(byte identifier, List<Option> options);
     void sendConfigureAcknowledge(byte identifier, List<Option> options);
     void sendConfigureNak(byte identifier, List<Option> options);
     void sendConfigureReject(byte identifier, List<Option> options);
 
-    void sendTerminateRequest();
-    void sendTerminateAcknowledge();
+    void sendTerminateRequest(byte identifier, WriteBuffer buffer);
+    void sendTerminateAcknowledge(byte identifier, WriteBuffer buffer);
 
-    void sendCodeReject();
+    void sendCodeReject(byte identifier, WriteBuffer buffer);
 
-    void sendEchoReply();
+    void sendEchoReply(byte identifier, WriteBuffer buffer);
 }

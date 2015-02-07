@@ -20,11 +20,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FrameReaderTest {
-    private static final byte IDENTIFIER = 42;
-    private static final List<Option> EXPECTED_OPTIONS =
+    public static final byte IDENTIFIER = 42;
+    public static final List<Option> EXPECTED_OPTIONS =
             Collections.<Option>singletonList(OptionProtocolFieldCompression.INSTANCE);
     // Buffer equivalent of EXPECTED_OPTIONS.
-    private static final Buffer EXPECTED_BUFFER =
+    public static final Buffer EXPECTED_BUFFER =
             new Buffer(OptionsReader.PROTOCOL_FIELD_COMPRESSION, 2);
 
     private FrameReader frameReader;
@@ -163,7 +163,7 @@ public class FrameReaderTest {
         verifyNoMoreInteractions(eventProcessor);
     }
 
-    private Buffer buildDemoPacket(byte code) {
+    public static Buffer buildDemoPacket(byte code) {
         byte length = 6; // 4 bytes header, 2 bytes option.
         byte optionLength = 2;
         return new Buffer(code, IDENTIFIER, 0, length, OptionsReader.PROTOCOL_FIELD_COMPRESSION, optionLength);

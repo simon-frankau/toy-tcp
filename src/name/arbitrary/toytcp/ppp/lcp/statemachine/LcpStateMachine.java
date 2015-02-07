@@ -1,6 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.WriteBuffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ import java.util.List;
  */
 public class LcpStateMachine implements EventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(LcpStateMachine.class);
+    private static final byte TODO_ID = 0;
+    private static final WriteBuffer TODO = null;
 
     private final LcpUpperLayerListener upperListener;
     private final ActionProcessor listener;
@@ -108,7 +111,7 @@ public class LcpStateMachine implements EventProcessor {
             case ACK_SENT:
             case OPENED:
                 restartCounter.onInitializeRestartCount();
-                listener.sendTerminateRequest();
+                listener.sendTerminateRequest(TODO_ID, TODO);
                 setState(State.CLOSING);
                 break;
         }
@@ -122,13 +125,13 @@ public class LcpStateMachine implements EventProcessor {
         switch (state) {
             case CLOSED:
                 // Sorry, we're closed.
-                listener.sendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge(TODO_ID, TODO);
                 break;
             case STOPPED:
                 restartCounter.onInitializeRestartCount();
                 // Fall through
             case OPENED:
-                listener.sendConfigureRequest();
+                listener.sendConfigureRequest(TODO_ID, null); // TODO
                 // Fall through...
             case REQ_SENT:
             case ACK_SENT:
@@ -174,12 +177,12 @@ public class LcpStateMachine implements EventProcessor {
             case CLOSED:
             case STOPPED:
                 // Hmmm. Not right.
-                listener.sendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge(TODO_ID, TODO);
                 break;
             case ACK_RCVD:
             case OPENED:
                 // Hmm. Already had ack. Return to base configuring state.
-                listener.sendConfigureRequest();
+                listener.sendConfigureRequest(TODO_ID, null); // TODO
                 setState(State.REQ_SENT);
                 break;
             case REQ_SENT:
@@ -201,19 +204,19 @@ public class LcpStateMachine implements EventProcessor {
             case CLOSED:
             case STOPPED:
                 // Hmmm. Not right.
-                listener.sendTerminateAcknowledge();
+                listener.sendTerminateAcknowledge(TODO_ID, TODO);
                 break;
             case REQ_SENT:
                 restartCounter.onInitializeRestartCount();
                 // Fall through.
             case ACK_RCVD:
             case OPENED:
-                listener.sendConfigureRequest();
+                listener.sendConfigureRequest(TODO_ID, null); // TODO
                 setState(State.REQ_SENT);
                 break;
             case ACK_SENT:
                 restartCounter.onInitializeRestartCount();
-                listener.sendConfigureRequest();
+                listener.sendConfigureRequest(TODO_ID, null); // TODO
                 setState(State.ACK_SENT);
                 break;
         }
@@ -229,7 +232,7 @@ public class LcpStateMachine implements EventProcessor {
     public void onReceiveTerminateRequest(byte identifier, Buffer buffer) {
         logger.info("ReceiveTerminateRequest {} {}", identifier, buffer);
         checkNotDown();
-        listener.sendTerminateAcknowledge();
+        listener.sendTerminateAcknowledge(identifier, TODO);
         switch (state) {
             case ACK_RCVD:
             case ACK_SENT:
@@ -254,7 +257,7 @@ public class LcpStateMachine implements EventProcessor {
                 setState(State.STOPPED);
                 break;
             case OPENED:
-                listener.sendConfigureRequest();
+                listener.sendConfigureRequest(TODO_ID, null); // TODO
                 // Fall through
             case REQ_SENT:
             case ACK_RCVD:
@@ -269,7 +272,7 @@ public class LcpStateMachine implements EventProcessor {
     public void onUnknownCode(byte code, byte identifier, Buffer buffer) {
         logger.warn("Received unknown code: {} {} {}", code, identifier, buffer);
         checkNotDown();
-        listener.sendCodeReject();
+        listener.sendCodeReject(TODO_ID, TODO);
     }
 
     @Override
@@ -310,7 +313,7 @@ public class LcpStateMachine implements EventProcessor {
                 break;
             case OPENED:
                 restartCounter.onInitializeRestartCount();
-                listener.sendTerminateRequest();
+                listener.sendTerminateRequest(TODO_ID, TODO);
                 setState(State.STOPPING);
                 break;
             case STOPPED:
@@ -328,7 +331,7 @@ public class LcpStateMachine implements EventProcessor {
         logger.info("EchoRequest {} {}", identifier, buffer);
         checkNotDown();
         if (state == State.OPENED) {
-            listener.sendEchoReply();
+            listener.sendEchoReply(TODO_ID, TODO);
         }
     }
 
@@ -377,7 +380,7 @@ public class LcpStateMachine implements EventProcessor {
     // Initial move into Open and Up.
     private void initialRequest() {
         restartCounter.onInitializeRestartCount();
-        listener.sendConfigureRequest();
+        listener.sendConfigureRequest(TODO_ID, null); // TODO
         setState(State.REQ_SENT);
     }
 

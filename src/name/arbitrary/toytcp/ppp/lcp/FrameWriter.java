@@ -10,8 +10,6 @@ import java.util.List;
 
 /**
  * Constructs and sends the messages from the state machine.
- *
- * TODO: Needs tests?
  */
 public class FrameWriter implements ActionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(FrameWriter.class);
@@ -23,18 +21,8 @@ public class FrameWriter implements ActionProcessor {
     }
 
     @Override
-    public void sendConfigureRequest() {
-        logger.info("SCR");
-    }
-
-    @Override
-    public void sendCodeReject() {
-        logger.info("SCJ");
-    }
-
-    @Override
-    public void sendEchoReply() {
-        logger.info("SER");
+    public void onThisLayerStarted() {
+        logger.info("TLS");
     }
 
     @Override
@@ -43,18 +31,8 @@ public class FrameWriter implements ActionProcessor {
     }
 
     @Override
-    public void onThisLayerStarted() {
-        logger.info("TLS");
-    }
-
-    @Override
-    public void sendTerminateAcknowledge() {
-        logger.info("STA");
-    }
-
-    @Override
-    public void sendTerminateRequest() {
-        logger.info("STR");
+    public void sendConfigureRequest(byte identifier, List<Option> options) {
+        sendConfigFrame(FrameReader.CONFIGURE_REQUEST, identifier, options);
     }
 
     @Override
@@ -72,6 +50,26 @@ public class FrameWriter implements ActionProcessor {
         sendConfigFrame(FrameReader.CONFIGURE_REJECT, identifier, options);
     }
 
+    @Override
+    public void sendTerminateRequest(byte identifier, WriteBuffer buffer) {
+        sendOtherFrame(FrameReader.TERMINATE_REQUEST, identifier, buffer);
+    }
+
+    @Override
+    public void sendTerminateAcknowledge(byte identifier, WriteBuffer buffer) {
+        sendOtherFrame(FrameReader.TERMINATE_ACK, identifier, buffer);
+    }
+
+    @Override
+    public void sendCodeReject(byte identifier, WriteBuffer buffer) {
+        sendOtherFrame(FrameReader.CODE_REJECT, identifier, buffer);
+    }
+
+    @Override
+    public void sendEchoReply(byte identifier, WriteBuffer buffer) {
+        sendOtherFrame(FrameReader.ECHO_REPLY, identifier, buffer);
+    }
+
     private void sendConfigFrame(byte type, byte identifier, List<Option> options) {
         WriteBuffer buffer = new WriteBuffer();
         buffer.append(type, identifier);
@@ -87,5 +85,20 @@ public class FrameWriter implements ActionProcessor {
 
         logger.info("{}", buffer);
         listener.send(buffer);
+    }
+
+    private void sendOtherFrame(byte type, byte identifier, WriteBuffer buffer) {
+        WriteBuffer newBuffer = new WriteBuffer();
+        newBuffer.append(type, identifier);
+        // Reserve the space for the length, and write in later.
+        int lengthFieldOffset = newBuffer.getAppendOffset();
+        newBuffer.append((byte) 0, (byte) 0);
+
+        newBuffer.append(buffer.toByteArray());
+
+        newBuffer.putU16(lengthFieldOffset, newBuffer.getAppendOffset());
+
+        logger.info("{}", newBuffer);
+        listener.send(newBuffer);
     }
 }

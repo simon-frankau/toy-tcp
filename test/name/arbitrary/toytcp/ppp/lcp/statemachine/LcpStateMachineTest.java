@@ -1,6 +1,7 @@
 package name.arbitrary.toytcp.ppp.lcp.statemachine;
 
 import name.arbitrary.toytcp.Buffer;
+import name.arbitrary.toytcp.WriteBuffer;
 import name.arbitrary.toytcp.ppp.lcp.options.Option;
 import org.junit.Before;
 import org.junit.Test;
@@ -407,13 +408,13 @@ public class LcpStateMachineTest {
                     verify(restartCounter).onInitializeRestartCount();
                     break;
                 case SCR:
-                    verify(stateActionListener).sendConfigureRequest();
+                    verify(stateActionListener).sendConfigureRequest(anyByte(), any(List.class));
                     break;
                 case TLD:
                     verify(upperListener).onThisLayerDown();
                     break;
                 case SER:
-                    verify(stateActionListener).sendEchoReply();
+                    verify(stateActionListener).sendEchoReply(anyByte(), any(WriteBuffer.class));
                     break;
                 case TLF:
                     verify(stateActionListener).onThisLayerFinished();
@@ -425,10 +426,10 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).onThisLayerStarted();
                     break;
                 case STA:
-                    verify(stateActionListener).sendTerminateAcknowledge();
+                    verify(stateActionListener).sendTerminateAcknowledge(anyByte(), any(WriteBuffer.class));
                     break;
                 case STR:
-                    verify(stateActionListener).sendTerminateRequest();
+                    verify(stateActionListener).sendTerminateRequest(anyByte(), any(WriteBuffer.class));
                     break;
                 case SCA:
                     verify(stateActionListener).sendConfigureAcknowledge(anyByte(), any(List.class));
@@ -437,7 +438,7 @@ public class LcpStateMachineTest {
                     verify(stateActionListener).sendConfigureNak(anyByte(), any(List.class));
                     break;
                 case SCJ:
-                    verify(stateActionListener).sendCodeReject();
+                    verify(stateActionListener).sendCodeReject(anyByte(), any(WriteBuffer.class));
                     break;
                 case ZRC:
                     verify(restartCounter).onZeroRestartCount();
