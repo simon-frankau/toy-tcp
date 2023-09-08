@@ -1,6 +1,15 @@
 ToyTCP
 ======
 
+**This project has extremely little functionality, has not been
+updated for years, and is unlikely to be finished.**
+
+Sorry about that. I got distracted way-back-when, and since then it's
+just not been a priority compared to other projects.
+
+Introduction
+------------
+
 This is a toy TCP/IP stack implementation, in order to practice my
 understanding of TCP/IP as I work through TCP/IP Illustrated. It hooks
 into the rest of the system through PPP.
